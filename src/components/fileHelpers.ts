@@ -1,6 +1,7 @@
 // fileHelpers.ts
-import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot } from "firebase/firestore";
-import { type FirebaseStorage, ref, uploadBytes } from "firebase/storage";
+import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot, updateDoc, deleteDoc } from "firebase/firestore";
+import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import type { FileMeta } from "./fileTypes";
 
 export const shouldUpload = async (
   db: Firestore,
@@ -44,4 +45,21 @@ export const handleFiles = async (db: Firestore, storage: FirebaseStorage, files
     const storageId = await uploadToStorage(storage, file);
     await updateFirestore(fileRef, file, storageId, snap);
   }
+};
+
+export const toggleStarInFirestore = async (db: Firestore, file: FileMeta) => {
+  const fileDoc = doc(db, "files", file.name);
+  await updateDoc(fileDoc, { starred: !file.starred });
+};
+
+export const deleteFileFromStorageAndFirestore = async (db: Firestore, storage: FirebaseStorage, file: FileMeta) => {
+  const storageRef = ref(storage, file.storagePath);
+  await deleteObject(storageRef);
+  const fileDoc = doc(db, "files", file.name);
+  await deleteDoc(fileDoc);
+};
+
+export const getFileDownloadUrl = async (storage: FirebaseStorage, file: FileMeta) => {
+  const storageRef = ref(storage, file.storagePath);
+  return await getDownloadURL(storageRef);
 };
