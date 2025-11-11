@@ -3,17 +3,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { deleteFileFromStorageAndFirestore, getFileDownloadUrl, toggleStarInFirestore } from "./fileHelpers";
-
-
-type FileMeta = {
-  id: string;
-  name: string;
-  size: number;
-  lastModified: number;
-  starred: boolean;
-  uploadedAt: number;
-  storagePath: string;
-};
+import type { FileMeta } from "./fileTypes";
 
 const FileList: FC = () => {
   const { storage, app } = useFirebaseStorage();
