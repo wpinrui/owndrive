@@ -6,10 +6,15 @@ import { deleteFileFromStorageAndFirestore, getFileDownloadUrl, toggleStarInFire
 import type { FileMeta } from "./fileTypes";
 import "./FileList.scss";
 
+type SortKey = "name" | "size" | "lastModified" | "starred";
+type SortOrder = "asc" | "desc";
+
 const FileList: FC = () => {
   const { storage, app } = useFirebaseStorage();
   const [files, setFiles] = useState<FileMeta[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const db = app ? getFirestore(app) : null;
 
   useEffect(() => {
@@ -48,12 +53,45 @@ const FileList: FC = () => {
     setSelectedFile(fileId);
   };
 
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortedFiles = [...files].sort((a, b) => {
+    let result = 0;
+    switch (sortKey) {
+      case "name":
+        result = a.name.localeCompare(b.name);
+        break;
+      case "size":
+        result = a.size - b.size;
+        break;
+      case "lastModified":
+        result = a.lastModified - b.lastModified;
+        break;
+      case "starred":
+        result = (a.starred ? 1 : 0) - (b.starred ? 1 : 0);
+        break;
+    }
+    return sortOrder === "asc" ? result : -result;
+  });
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  };
+
+  const renderSortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return null;
+    return sortOrder === "asc" ? " ▲" : " ▼";
   };
 
   if (!files.length) {
@@ -73,15 +111,23 @@ const FileList: FC = () => {
         <thead>
           <tr>
             <th className="col-icon"></th>
-            <th className="col-name">Name</th>
-            <th className="col-size">Size</th>
-            <th className="col-modified">Last Modified</th>
-            <th className="col-starred">Starred</th>
+            <th className="col-name" onClick={() => handleSort("name")}>
+              Name{renderSortIndicator("name")}
+            </th>
+            <th className="col-size" onClick={() => handleSort("size")}>
+              Size{renderSortIndicator("size")}
+            </th>
+            <th className="col-modified" onClick={() => handleSort("lastModified")}>
+              Last Modified{renderSortIndicator("lastModified")}
+            </th>
+            <th className="col-starred" onClick={() => handleSort("starred")}>
+              Starred{renderSortIndicator("starred")}
+            </th>
             <th className="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {files.map(file => (
+          {sortedFiles.map(file => (
             <tr
               key={file.id}
               className={`file-row ${selectedFile === file.id ? "selected" : ""}`}
