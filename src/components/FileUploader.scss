@@ -10,30 +10,32 @@
         padding: 8px 16px;
         font-size: 16px;
         cursor: pointer;
-        border: 1px solid #ccc;
+        border: 1px solid #444;
         border-radius: 4px;
-        background-color: #f5f5f5;
+        background-color: #222;
+        color: #f5f5f5;
         transition: background-color 0.2s, box-shadow 0.2s;
 
         &:hover:not(:disabled) {
-            background-color: #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         &:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
         & .FileUploader__icon {
             font-size: 20px;
+            color: #ddd;
         }
 
         & .FileUploader__spinner {
             width: 20px;
             height: 20px;
-            border: 3px solid #ccc;
-            border-top: 3px solid #333;
+            border: 3px solid #444;
+            border-top: 3px solid #f5f5f5;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -44,11 +46,11 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: #ff4d4f;
-        color: white;
+        background: #d32f2f;
+        color: #fff;
         padding: 12px 24px;
         border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         animation: fadein 0.3s, fadeout 0.3s 2.7s;
     }
 }
