@@ -6,7 +6,6 @@ import { FileUploader } from "./components/FileUploader";
 function App() {
   return (
     <div style={{ padding: "20px" }}>
-      <h1>OwnDrive</h1>
       <FileUploader />
       <FileList />
     </div>
