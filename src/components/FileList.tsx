@@ -1,11 +1,16 @@
 import { type FC, useEffect, useState, useCallback, type MouseEvent } from "react";
 import { collection, onSnapshot, getFirestore } from "firebase/firestore";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
-import { deleteFileFromStorageAndFirestore, getFileDownloadUrl, toggleStarInFirestore } from "./fileHelpers";
+import {
+  deleteFileFromStorageAndFirestore,
+  getFileDownloadUrl,
+  toggleStarInFirestore
+} from "./fileHelpers";
 import type { FileMeta } from "./fileTypes";
 import { FileRow } from "./FileRow";
 import { FileTableHeader } from "./FileTableHeader";
 import { EmptyState } from "./EmptyState";
+import { sortFiles, buildRange, mergeSelection } from "./fileListHelpers";
 import "./FileList.scss";
 
 export type SortKey = "name" | "size" | "lastModified" | "starred";
@@ -60,6 +65,8 @@ const FileList: FC = () => {
     }
   };
 
+  const displayedFiles = sortFiles(files, sortKey, sortOrder);
+
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (selected.length === 0) return;
@@ -77,7 +84,7 @@ const FileList: FC = () => {
         toggleStar(selectedFiles);
       }
     },
-    [selected, files, storage, db] // displayedFiles is derived from files/sort state so this dependency list is sufficient
+    [selected, files, storage, db, displayedFiles]
   );
 
   useEffect(() => {
@@ -96,43 +103,19 @@ const FileList: FC = () => {
 
   if (!files.length) return <EmptyState />;
 
-  const displayedFiles = [...files].sort((a, b) => {
-    let result = 0;
-    switch (sortKey) {
-      case "name": result = a.name.localeCompare(b.name); break;
-      case "size": result = a.size - b.size; break;
-      case "lastModified": result = a.lastModified - b.lastModified; break;
-      case "starred": result = Number(a.starred) - Number(b.starred); break;
-    }
-    return sortOrder === "asc" ? result : -result;
-  });
-
   const onRowClick = (id: string, index: number, e: MouseEvent) => {
-    // --- CTRL + SHIFT: add range to existing selection ---
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && lastSelectedIndex !== null) {
-      const start = Math.min(lastSelectedIndex, index);
-      const end = Math.max(lastSelectedIndex, index);
-      const range = displayedFiles.slice(start, end + 1).map(f => f.id);
-
-      setSelected(prev => {
-        const merged = new Set([...prev, ...range]);
-        return [...merged];
-      });
-
+      const range = buildRange(displayedFiles, lastSelectedIndex, index);
+      setSelected(prev => mergeSelection(prev, range));
       return;
     }
 
-    // --- SHIFT only: full range replace ---
     if (e.shiftKey && lastSelectedIndex !== null) {
-      const start = Math.min(lastSelectedIndex, index);
-      const end = Math.max(lastSelectedIndex, index);
-      const range = displayedFiles.slice(start, end + 1).map(f => f.id);
-
+      const range = buildRange(displayedFiles, lastSelectedIndex, index);
       setSelected(range);
       return;
     }
 
-    // --- CTRL only: toggle single item ---
     if (e.metaKey || e.ctrlKey) {
       setSelected(prev =>
         prev.includes(id)
@@ -143,7 +126,6 @@ const FileList: FC = () => {
       return;
     }
 
-    // --- Normal click: select one ---
     setSelected([id]);
     setLastSelectedIndex(index);
   };
