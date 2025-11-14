@@ -40,11 +40,6 @@ const FileList: FC = () => {
     for (const file of items) {
       await toggleStarInFirestore(db, file);
     }
-    setFiles(f =>
-      f.map(x =>
-        items.some(y => y.id === x.id) ? { ...x, starred: !x.starred } : x
-      )
-    );
   };
 
   const deleteFiles = async (items: FileMeta[]) => {
