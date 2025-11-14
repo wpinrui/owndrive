@@ -13,11 +13,20 @@ export const shouldUpload = async (
   return { fileRef, snap: snap.exists() ? snap : null };
 };
 
+const formatTimestamp = (timestamp: number) => {
+  const d = new Date(timestamp);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+};
+
 export const uploadToStorage = async (storage: FirebaseStorage, file: File): Promise<string> => {
-  const storageId = crypto.randomUUID();
+  const timestamp = formatTimestamp(file.lastModified);
+  const storageId = `${file.name}-${timestamp}`;
   await uploadBytes(ref(storage, storageId), file);
   return storageId;
 };
+
 
 export const updateFirestore = async (
   fileRef: DocumentReference,
@@ -26,13 +35,13 @@ export const updateFirestore = async (
   existingSnap: DocumentSnapshot | null
 ): Promise<void> => {
   await setDoc(fileRef, {
-    id: storageId,
-    name: file.name,
+    id: storageId,                 // now unique with timestamp
+    name: file.name,               // display name
     size: file.size,
     lastModified: file.lastModified,
     starred: existingSnap?.data()?.starred ?? false,
     uploadedAt: Date.now(),
-    storagePath: storageId,
+    storagePath: storageId,        // same as cloud storage name
   });
 };
 
