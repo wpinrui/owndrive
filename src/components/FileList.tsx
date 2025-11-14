@@ -1,5 +1,4 @@
-// FileList.tsx
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState, useCallback, type MouseEvent } from "react";
 import { collection, onSnapshot, getFirestore } from "firebase/firestore";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
 import { deleteFileFromStorageAndFirestore, getFileDownloadUrl, toggleStarInFirestore } from "./fileHelpers";
@@ -15,7 +14,8 @@ export type SortOrder = "asc" | "desc";
 const FileList: FC = () => {
   const { storage, app } = useFirebaseStorage();
   const [files, setFiles] = useState<FileMeta[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const db = app ? getFirestore(app) : null;
@@ -30,24 +30,60 @@ const FileList: FC = () => {
     return () => unsubscribe();
   }, [db]);
 
-  const toggleStar = async (file: FileMeta) => {
+  const toggleStar = async (items: FileMeta[]) => {
     if (!db) return;
-    await toggleStarInFirestore(db, file);
-    setFiles(f => f.map(f2 => (f2.name === file.name ? { ...f2, starred: !f2.starred } : f2)));
+    for (const file of items) {
+      await toggleStarInFirestore(db, file);
+    }
+    setFiles(f =>
+      f.map(x =>
+        items.some(y => y.id === x.id) ? { ...x, starred: !x.starred } : x
+      )
+    );
   };
 
-  const deleteFile = async (file: FileMeta) => {
-    if (!db || !storage || file.starred) return;
-    await deleteFileFromStorageAndFirestore(db, storage, file);
-    setFiles(f => f.filter(f2 => f2.name !== file.name));
-    if (selectedFile === file.id) setSelectedFile(null);
+  const deleteFiles = async (items: FileMeta[]) => {
+    if (!db || !storage) return;
+    for (const file of items) {
+      if (!file.starred) await deleteFileFromStorageAndFirestore(db, storage, file);
+    }
+    setFiles(f => f.filter(x => !items.some(y => y.id === x.id)));
+    setSelected([]);
+    setLastSelectedIndex(null);
   };
 
-  const downloadFile = async (file: FileMeta) => {
+  const downloadFiles = async (items: FileMeta[]) => {
     if (!storage) return;
-    const url = await getFileDownloadUrl(storage, file);
-    window.open(url, "_blank");
+    for (const file of items) {
+      const url = await getFileDownloadUrl(storage, file);
+      window.open(url, "_blank");
+    }
   };
+
+  const handleKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (selected.length === 0) return;
+      const selectedFiles = displayedFiles.filter(f => selected.includes(f.id));
+      if (e.key === "Enter") {
+        e.preventDefault();
+        downloadFiles(selectedFiles);
+      }
+      if (e.key === "Delete" && e.shiftKey) {
+        e.preventDefault();
+        deleteFiles(selectedFiles);
+      }
+      if (e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        toggleStar(selectedFiles);
+      }
+    },
+    [selected, files, storage, db] // displayedFiles is derived from files/sort state so this dependency list is sufficient
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -60,31 +96,72 @@ const FileList: FC = () => {
 
   if (!files.length) return <EmptyState />;
 
-  const sortedFiles = [...files].sort((a, b) => {
+  const displayedFiles = [...files].sort((a, b) => {
     let result = 0;
     switch (sortKey) {
       case "name": result = a.name.localeCompare(b.name); break;
       case "size": result = a.size - b.size; break;
       case "lastModified": result = a.lastModified - b.lastModified; break;
-      case "starred": result = (a.starred ? 1 : 0) - (b.starred ? 1 : 0); break;
+      case "starred": result = Number(a.starred) - Number(b.starred); break;
     }
     return sortOrder === "asc" ? result : -result;
   });
+
+  const onRowClick = (id: string, index: number, e: MouseEvent) => {
+    // --- CTRL + SHIFT: add range to existing selection ---
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && lastSelectedIndex !== null) {
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const range = displayedFiles.slice(start, end + 1).map(f => f.id);
+
+      setSelected(prev => {
+        const merged = new Set([...prev, ...range]);
+        return [...merged];
+      });
+
+      return;
+    }
+
+    // --- SHIFT only: full range replace ---
+    if (e.shiftKey && lastSelectedIndex !== null) {
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const range = displayedFiles.slice(start, end + 1).map(f => f.id);
+
+      setSelected(range);
+      return;
+    }
+
+    // --- CTRL only: toggle single item ---
+    if (e.metaKey || e.ctrlKey) {
+      setSelected(prev =>
+        prev.includes(id)
+          ? prev.filter(x => x !== id)
+          : [...prev, id]
+      );
+      setLastSelectedIndex(index);
+      return;
+    }
+
+    // --- Normal click: select one ---
+    setSelected([id]);
+    setLastSelectedIndex(index);
+  };
 
   return (
     <div className="file-list-container">
       <table className="file-list-table">
         <FileTableHeader sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
         <tbody>
-          {sortedFiles.map(file => (
+          {displayedFiles.map((file, index) => (
             <FileRow
               key={file.id}
               file={file}
-              selected={selectedFile === file.id}
-              onRowClick={setSelectedFile}
-              onDownload={downloadFile}
-              onDelete={deleteFile}
-              onToggleStar={toggleStar}
+              selected={selected.includes(file.id)}
+              onRowClick={(id, e) => onRowClick(id, index, e)}
+              onDownload={() => downloadFiles([file])}
+              onDelete={() => deleteFiles([file])}
+              onToggleStar={() => toggleStar([file])}
             />
           ))}
         </tbody>
