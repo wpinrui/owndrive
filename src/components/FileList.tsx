@@ -47,7 +47,6 @@ const FileList: FC = () => {
     for (const file of items) {
       if (!file.starred) await deleteFileFromStorageAndFirestore(db, storage, file);
     }
-    setFiles(f => f.filter(x => !items.some(y => y.id === x.id)));
     setSelected([]);
     setLastSelectedIndex(null);
   };
