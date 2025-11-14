@@ -22,7 +22,12 @@ const formatTimestamp = (timestamp: number) => {
 
 export const uploadToStorage = async (storage: FirebaseStorage, file: File): Promise<string> => {
   const timestamp = formatTimestamp(file.lastModified);
-  const storageId = `${file.name}-${timestamp}`;
+
+  const dotIndex = file.name.lastIndexOf(".");
+  const baseName = dotIndex !== -1 ? file.name.slice(0, dotIndex) : file.name;
+  const extension = dotIndex !== -1 ? file.name.slice(dotIndex) : "";
+
+  const storageId = `${baseName}-${timestamp}${extension}`;
   await uploadBytes(ref(storage, storageId), file);
   return storageId;
 };
