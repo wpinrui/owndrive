@@ -1,0 +1,114 @@
+.file-row {
+    &.selected {
+        background-color: #f1f1f1;
+    }
+
+    .col-icon {
+        .file-thumbnail {
+            font-size: 1.8rem;
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            border-radius: 4px;
+
+            &.icon-pdf {
+                color: #e53935;
+            }
+
+            &.icon-doc {
+                color: #1e88e5;
+            }
+
+            &.icon-xls {
+                color: #43a047;
+            }
+
+            &.icon-ppt {
+                color: #fb8c00;
+            }
+
+            &.icon-txt {
+                color: #757575;
+            }
+
+            &.icon-md {
+                color: #546e7a;
+            }
+
+            &.icon-csv {
+                color: #8e24aa;
+            }
+
+            &.icon-img {
+                color: #f4511e;
+            }
+
+            &.icon-audio {
+                color: #3949ab;
+            }
+
+            &.icon-video {
+                color: #fdd835;
+            }
+
+            &.icon-archive {
+                color: #6d4c41;
+            }
+
+            &.icon-code {
+                color: #00acc1;
+            }
+
+            &.icon-default {
+                color: #9e9e9e;
+            }
+        }
+    }
+
+    .col-name {
+        font-weight: 500;
+        padding-left: 8px;
+    }
+
+    .col-size,
+    .col-modified,
+    .col-starred,
+    .col-actions {
+        text-align: center;
+    }
+
+    .col-actions {
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+
+            .action-btn {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 4px;
+                border-radius: 4px;
+                transition: background 0.2s;
+
+                &:hover {
+                    background-color: #e0e0e0;
+                }
+
+                &.download-btn {
+                    color: #1e88e5;
+                }
+
+                &.delete-btn {
+                    color: #e53935;
+                }
+
+                &.star-btn {
+                    color: #fdd835;
+                }
+            }
+        }
+    }
+}
