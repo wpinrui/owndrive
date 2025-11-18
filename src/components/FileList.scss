@@ -197,6 +197,40 @@
     }
 }
 
+.file-list-controls {
+    /* Aligns the toggle with other potential controls */
+    display: inline-flex;
+    margin-left: 16px; /* Adjust spacing as needed */
+}
+
+.toggle-button-label {
+    /* Mimics the button structure */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #222; /* Default/Inactive background */
+    color: #f5f5f5;
+    transition: background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+    user-select: none; /* Prevents text selection on click */
+}
+
+/* Visually hide the actual checkbox but keep it for functionality and accessibility */
+.toggle-button-checkbox {
+    /* The __input style from your file uploader can be reused here */
+    display: none;
+}
+
+/* Hover style */
+.toggle-button-label:hover {
+    background-color: #333;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
 // Responsive design for smaller screens
 @media (max-width: 1024px) {
     .file-list-table {
