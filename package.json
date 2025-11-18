@@ -10,7 +10,7 @@
     "dev": "vite",
     "dev:web": "vite --open",
     "dev:electron": "vite",
-    "icons": "electron-icon-builder --input=resources/owndrive-icon.png --output=resources/icons",
+    "icons": "node scripts/build-icons.mjs",
     "build": "tsc -b && vite build",
     "package": "npm run icons && npm run build && electron-builder",
     "lint": "eslint .",

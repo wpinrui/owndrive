@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -9,18 +10,31 @@ const rendererPath = path.join(__dirname, '../../dist')
 
 const resolveIconPath = () => {
   if (process.env.VITE_DEV_SERVER_URL) {
-    return path.join(process.cwd(), 'resources', 'icons', 'png', '256x256.png')
+    const generatedDevIcon = path.join(process.cwd(), 'resources', 'icons', 'png', '256x256.png')
+    if (existsSync(generatedDevIcon)) {
+      return generatedDevIcon
+    }
+    const fallbackDevIcon = path.join(process.cwd(), 'resources', 'owndrive-icon.png')
+    return existsSync(fallbackDevIcon) ? fallbackDevIcon : undefined
   }
 
-  if (process.platform === 'win32') {
-    return path.join(process.resourcesPath, 'icons', 'win', 'icon.ico')
+  const platformCandidates =
+    process.platform === 'win32'
+      ? [path.join(process.resourcesPath, 'icons', 'win', 'icon.ico')]
+      : process.platform === 'darwin'
+        ? [path.join(process.resourcesPath, 'icons', 'mac', 'icon.icns')]
+        : [
+            path.join(process.resourcesPath, 'icons', 'png', '256x256.png'),
+            path.join(process.resourcesPath, 'icons', 'png', '512x512.png'),
+          ]
+
+  for (const candidate of platformCandidates) {
+    if (existsSync(candidate)) {
+      return candidate
+    }
   }
 
-  if (process.platform === 'darwin') {
-    return path.join(process.resourcesPath, 'icons', 'mac', 'icon.icns')
-  }
-
-  return path.join(process.resourcesPath, 'icons', 'png', '256x256.png')
+  return undefined
 }
 
 if (!app.requestSingleInstanceLock()) {

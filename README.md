@@ -160,6 +160,7 @@ This installs the Vite frontend, Electron runtime, and builder tooling.
 
 - The source PNG lives at `resources/owndrive-icon.png`.
 - Regenerate all platform formats with `npm run icons` (the `package` script calls this automatically).
+- Generated assets are gitignored—run `npm run icons` at least once before `npm run dev` if you want the custom icon locally.
 - Generated assets land in `resources/icons/` and are bundled automatically via Electron Builder’s `extraResources` config.
 - Feel free to swap in your own artwork—just replace `owndrive-icon.png` and rerun `npm run icons`.
 - Database icon created by [Freepik](https://www.freepik.com/) via [Flaticon](https://www.flaticon.com/free-icon/database_138932).
