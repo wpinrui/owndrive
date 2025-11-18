@@ -30,7 +30,7 @@ OwnDrive is a self-hosted alternative to OneDrive: you keep full control of your
 
 2. **Add a web app**
    - In *Project settings → General*, click *Add app → Web*.
-   - Copy the **Web API Key** and **Project ID**—you’ll need them for `.env`.
+   - Copy the **Web API Key** and **Project ID**—you'll need them for the app settings.
 
 3. **Enable Firestore**
    - Open *Build → Firestore Database → Create database*.
@@ -72,40 +72,21 @@ OwnDrive is a self-hosted alternative to OneDrive: you keep full control of your
 
 ---
 
-## 2. Configure environment variables
+## 2. Configure Firebase credentials
 
-OwnDrive reads Firebase credentials from `.env`. You can create it manually from `.env.example` or use the helper scripts.
+OwnDrive stores Firebase credentials in the app settings (stored locally). You can configure them directly in the app:
 
-### Option A – Guided scripts
+1. **Launch the app** (after installing dependencies and running `npm run dev` or after installing the packaged app).
+2. **Open Settings** by clicking the settings button in the app.
+3. **Enter your Firebase credentials**:
+   - **API Key**: Your Firebase Web API Key
+   - **Project ID**: Your Firebase Project ID
+   - **Storage Bucket**: Your Firebase Storage Bucket (e.g., `your-project-id.appspot.com`)
+4. **Click Save** to store the configuration.
 
-> Run from the repository root (`C:\path\to\owndrive` or `~/Documents/owndrive`).
+The credentials are stored locally in the app and will persist across sessions. The app will automatically reconnect to Firebase when you save the settings.
 
-- **macOS/Linux/Git Bash**
-
-  ```bash
-  chmod +x scripts/setup-env.sh
-  ./scripts/setup-env.sh
-  ```
-
-- **Windows Command Prompt / PowerShell**
-
-  ```bat
-  scripts\setup-env.bat
-  ```
-
-The script prompts for:
-
-```
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-```
-
-### Option B – Manual edit
-
-Copy `.env.example` to `.env` and fill in the values yourself.
-
-> Whenever you change `.env`, restart `npm run dev` so Electron reloads the config.
+> **Note**: For development, you can still use environment variables (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`) as a fallback, but the Settings dialog is the recommended approach for distribution.
 
 ---
 
@@ -177,11 +158,11 @@ This installs the Vite frontend, Electron runtime, and builder tooling.
 
 ---
 
-## 8. Updating Firebase or environment
+## 8. Updating Firebase configuration
 
-- Add new keys to `.env.example` + `.env` (and re-run the setup script) when you expand the app.
-- If you rotate your Firebase API key, regenerate it in the console and re-run the env script.
-- Keep `.env` out of version control (`.gitignore` already handles this).
+- To update your Firebase credentials, open the Settings dialog and modify the Firebase Configuration section.
+- If you rotate your Firebase API key, regenerate it in the Firebase console and update it in the app settings.
+- Changes take effect immediately after saving—no restart required.
 
 ---
 
@@ -189,10 +170,10 @@ This installs the Vite frontend, Electron runtime, and builder tooling.
 
 | Symptom | Fix |
 | --- | --- |
-| Electron window shows “Missing Firebase configuration” | Check `.env`; ensure `npm run dev` was restarted after editing. |
+| Electron window shows "Missing Firebase configuration" | Open Settings and configure your Firebase credentials (API Key, Project ID, and Storage Bucket). |
 | Uploads fail with permission errors | Review Firebase Storage/Firestore rules; ensure your auth state matches the rule requirements. |
 | `The process "####" not found` when starting dev server | Stop all running Electron instances, delete `dist-electron`, and rerun `npm run dev`. |
-| Packaging fails on macOS/Linux | Ensure you’re running on the target OS or pass the appropriate `--mac/--win/--linux` flag. Some targets require platform-specific host machines. |
+| Packaging fails on macOS/Linux | Ensure you're running on the target OS or pass the appropriate `--mac/--win/--linux` flag. Some targets require platform-specific host machines. |
 
 ---
 

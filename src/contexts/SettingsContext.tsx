@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { Firestore, doc, getDoc, setDoc } from "firebase/firestore";
-import type { UserSettings, CollisionBehavior } from "../types/settings";
+import type { UserSettings, CollisionBehavior, FirebaseConfig } from "../types/settings";
 import { DEFAULT_SETTINGS } from "../types/settings";
+
+const FIREBASE_CONFIG_STORAGE_KEY = "firebaseConfig";
 
 interface SettingsContextType {
   settings: UserSettings;
@@ -26,8 +28,38 @@ interface SettingsProviderProps {
   db: Firestore | null;
 }
 
+// Load Firebase config from localStorage
+const loadFirebaseConfig = (): FirebaseConfig | undefined => {
+  try {
+    const stored = localStorage.getItem(FIREBASE_CONFIG_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error("Error loading Firebase config from localStorage:", error);
+  }
+  return undefined;
+};
+
+// Save Firebase config to localStorage
+const saveFirebaseConfig = (config: FirebaseConfig | undefined) => {
+  if (config) {
+    localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(config));
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event("firebaseConfigUpdated"));
+  } else {
+    localStorage.removeItem(FIREBASE_CONFIG_STORAGE_KEY);
+    window.dispatchEvent(new Event("firebaseConfigUpdated"));
+  }
+};
+
 export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
-  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
+  // Load Firebase config from localStorage on init
+  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | undefined>(() => loadFirebaseConfig());
+  const [settings, setSettings] = useState<UserSettings>(() => ({
+    ...DEFAULT_SETTINGS,
+    firebaseConfig: loadFirebaseConfig(),
+  }));
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from Firestore
@@ -44,10 +76,18 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
         
         if (settingsSnap.exists()) {
           const data = settingsSnap.data();
-          setSettings({
+          setSettings((prev) => ({
+            ...prev,
             collisionBehavior: data.collisionBehavior || DEFAULT_SETTINGS.collisionBehavior,
             starredCollisionBehavior: data.starredCollisionBehavior || DEFAULT_SETTINGS.starredCollisionBehavior,
-          });
+            firebaseConfig: prev.firebaseConfig, // Keep Firebase config from localStorage
+          }));
+        } else {
+          // Ensure Firebase config is preserved even if Firestore settings don't exist
+          setSettings((prev) => ({
+            ...prev,
+            firebaseConfig: prev.firebaseConfig,
+          }));
         }
       } catch (error) {
         console.error("Error loading settings:", error);
@@ -59,17 +99,26 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
     loadSettings();
   }, [db]);
 
-  // Save settings to Firestore
+  // Save settings to Firestore (excluding Firebase config which is stored locally)
   const saveSettings = useCallback(async (newSettings: UserSettings) => {
-    if (!db) return;
-    
-    try {
-      const settingsRef = doc(db, "settings", "user");
-      await setDoc(settingsRef, newSettings, { merge: true });
-      setSettings(newSettings);
-    } catch (error) {
-      console.error("Error saving settings:", error);
+    // Save Firebase config to localStorage
+    if (newSettings.firebaseConfig !== undefined) {
+      saveFirebaseConfig(newSettings.firebaseConfig);
+      setFirebaseConfig(newSettings.firebaseConfig);
     }
+    
+    // Save other settings to Firestore
+    if (db) {
+      try {
+        const settingsRef = doc(db, "settings", "user");
+        const { firebaseConfig: _, ...settingsToSave } = newSettings;
+        await setDoc(settingsRef, settingsToSave, { merge: true });
+      } catch (error) {
+        console.error("Error saving settings to Firestore:", error);
+      }
+    }
+    
+    setSettings(newSettings);
   }, [db]);
 
   const updateSettings = useCallback((newSettings: UserSettings) => {
