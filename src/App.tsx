@@ -32,7 +32,7 @@ const App: FC = () => {
             {CollisionDialogComponent}
             <div className="app-container" {...dragHandlers}>
                 <DropZoneOverlay isVisible={isDragging} />
-                <div className="d-flex">
+                <div className="d-flex-tight">
                 <FileUploader />
                 <StarredFirstToggle 
                     showStarredFirst={showStarredFirst}

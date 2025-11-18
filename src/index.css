@@ -335,6 +335,13 @@ li {
     gap: var(--spacing-md);
 }
 
+.d-flex-tight {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
 .text-center {
     text-align: center;
 }
