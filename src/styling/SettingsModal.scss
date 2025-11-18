@@ -102,11 +102,12 @@
 }
 
 .settings-option {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  border: 1px solid var(--border-primary);
+  border: 2px solid var(--border-primary);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -118,15 +119,26 @@
   }
 
   input[type="radio"] {
-    margin-top: 2px;
-    cursor: pointer;
-    accent-color: var(--accent-blue);
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
   }
 
-  input[type="radio"]:checked + .settings-option-content {
+  // When checked, style the whole option
+  &:has(input[type="radio"]:checked) {
+    border-color: #4fc3f7;
+    background-color: rgba(79, 195, 247, 0.15);
+
     .settings-option-label {
-      color: var(--accent-blue);
+      color: #4fc3f7;
       font-weight: 600;
+    }
+
+    &:hover {
+      border-color: #81d4fa;
+      background-color: rgba(79, 195, 247, 0.2);
     }
   }
 }

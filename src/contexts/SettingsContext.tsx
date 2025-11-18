@@ -7,6 +7,7 @@ interface SettingsContextType {
   settings: UserSettings;
   updateCollisionBehavior: (behavior: CollisionBehavior) => void;
   updateStarredCollisionBehavior: (behavior: CollisionBehavior) => void;
+  updateSettings: (newSettings: UserSettings) => void;
   isLoading: boolean;
 }
 
@@ -71,15 +72,25 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
     }
   }, [db]);
 
-  const updateCollisionBehavior = useCallback((behavior: CollisionBehavior) => {
-    const newSettings = { ...settings, collisionBehavior: behavior };
+  const updateSettings = useCallback((newSettings: UserSettings) => {
     saveSettings(newSettings);
-  }, [settings, saveSettings]);
+  }, [saveSettings]);
+
+  const updateCollisionBehavior = useCallback((behavior: CollisionBehavior) => {
+    setSettings((prevSettings) => {
+      const newSettings = { ...prevSettings, collisionBehavior: behavior };
+      saveSettings(newSettings);
+      return newSettings;
+    });
+  }, [saveSettings]);
 
   const updateStarredCollisionBehavior = useCallback((behavior: CollisionBehavior) => {
-    const newSettings = { ...settings, starredCollisionBehavior: behavior };
-    saveSettings(newSettings);
-  }, [settings, saveSettings]);
+    setSettings((prevSettings) => {
+      const newSettings = { ...prevSettings, starredCollisionBehavior: behavior };
+      saveSettings(newSettings);
+      return newSettings;
+    });
+  }, [saveSettings]);
 
   return (
     <SettingsContext.Provider
@@ -87,6 +98,7 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
         settings,
         updateCollisionBehavior,
         updateStarredCollisionBehavior,
+        updateSettings,
         isLoading,
       }}
     >

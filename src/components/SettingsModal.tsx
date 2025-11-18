@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
-  const { settings, updateCollisionBehavior, updateStarredCollisionBehavior } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState(settings);
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleSave = () => {
-    updateCollisionBehavior(localSettings.collisionBehavior);
-    updateStarredCollisionBehavior(localSettings.starredCollisionBehavior);
+    updateSettings(localSettings);
     onClose();
   };
 
