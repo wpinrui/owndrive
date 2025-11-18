@@ -4,9 +4,11 @@ import { getFirestore } from "firebase/firestore";
 import { useToast } from "../contexts/ToastContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useCollisionResolver } from "../hooks/useCollisionResolver";
-import { formatFileSize } from "./helpers/fileHelpers";
+import { formatFileSize, checkFileSizesAndConfirm } from "./helpers/fileHelpers";
 import "../styling/FileUploader.scss";
 import { handleFiles } from "./helpers/fileHelpers";
+import { DEFAULT_SETTINGS } from "../types/settings";
+import { useFileSizeConfirmation } from "../hooks/useFileSizeConfirmation";
 
 const FileUploader: FC = () => {
   const { storage, app } = useFirebaseStorage();
@@ -16,14 +18,42 @@ const FileUploader: FC = () => {
   const { showToast, updateToast } = useToast();
   const { settings } = useSettings();
   const { resolveCollision, CollisionDialogComponent } = useCollisionResolver();
+  const { confirmFileSize, FileSizeDialogComponent } = useFileSizeConfirmation();
 
   const onFilesSelected = useCallback(
     async (files: FileList) => {
       setLoading(true);
       const fileArray = Array.from(files);
       
+      // Check file sizes and request confirmation for files that exceed the limit
+      const filesToUpload = await checkFileSizesAndConfirm(
+        fileArray,
+        settings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit,
+        confirmFileSize
+      );
+
+      // If all files were cancelled, show message and return
+      if (filesToUpload.length === 0) {
+        showToast("Upload cancelled - no files selected", "info", { duration: 3000 });
+        setLoading(false);
+        return;
+      }
+
+      // If some files were cancelled, show info
+      if (filesToUpload.length < fileArray.length) {
+        const cancelledCount = fileArray.length - filesToUpload.length;
+        showToast(`${cancelledCount} file(s) were cancelled`, "info", { duration: 3000 });
+      }
+      
+      // Create a new FileList-like object from the filtered files
+      // We'll need to pass filesToUpload directly to handleFiles
+      // Since handleFiles expects FileList, we'll need to update it or create a DataTransfer
+      const dataTransfer = new DataTransfer();
+      filesToUpload.forEach(file => dataTransfer.items.add(file));
+      const filteredFileList = dataTransfer.files;
+      
       // Show toast for each file being uploaded
-      const toastIds = fileArray.map((file) => {
+      const toastIds = filesToUpload.map((file) => {
         const fileSize = formatFileSize(file.size);
         return showToast(
           `Uploading ${file.name} (${fileSize})...`,
@@ -36,9 +66,9 @@ const FileUploader: FC = () => {
 
       try {
         // For multiple files, show combined progress
-        if (fileArray.length > 1) {
+        if (filesToUpload.length > 1) {
           combinedToastId = showToast(
-            `Uploading ${fileArray.length} files...`,
+            `Uploading ${filesToUpload.length} files...`,
             "loading",
             { duration: 0, progress: 0 }
           );
@@ -46,7 +76,7 @@ const FileUploader: FC = () => {
           await handleFiles(
             db!,
             storage!,
-            files,
+            filteredFileList,
             (progress) => {
               updateToast(combinedToastId!, { progress });
             },
@@ -66,18 +96,18 @@ const FileUploader: FC = () => {
 
           updateToast(combinedToastId, {
             type: "success",
-            message: `Successfully uploaded ${fileArray.length} files`,
+            message: `Successfully uploaded ${filesToUpload.length} files`,
             duration: 4000,
           });
         } else {
           // Single file upload
-          const file = fileArray[0];
+          const file = filesToUpload[0];
           const toastId = toastIds[0];
 
           await handleFiles(
             db!,
             storage!,
-            files,
+            filteredFileList,
             (progress) => {
               updateToast(toastId, { progress });
             },
@@ -117,7 +147,7 @@ const FileUploader: FC = () => {
         setLoading(false);
       }
     },
-    [db, storage, showToast, updateToast, settings, resolveCollision]
+    [db, storage, showToast, updateToast, settings, resolveCollision, confirmFileSize]
   );
 
   if (!db || !storage) return null;
@@ -125,6 +155,7 @@ const FileUploader: FC = () => {
   return (
     <>
       {CollisionDialogComponent}
+      {FileSizeDialogComponent}
       <div className="FileUploader">
         <button
           type="button"

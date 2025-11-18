@@ -2,6 +2,8 @@ import { type FC, useState, useEffect } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CollisionBehavior } from "../types/settings";
+import { DEFAULT_SETTINGS } from "../types/settings";
+import { formatFileSize } from "./helpers/fileHelpers";
 import "../styling/SettingsModal.scss";
 
 type Props = {
@@ -197,6 +199,43 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
                   </div>
                 </label>
               ))}
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <h3>File Size Warning</h3>
+            <p className="settings-description">
+              Warn when uploading files larger than this size. This helps you stay within Firebase's free tier limits (5 GB storage). The default is 100 MB (2% of free tier).
+            </p>
+            <div className="settings-input-group">
+              <label htmlFor="file-size-warning-limit" className="settings-input-label">
+                Warning Threshold
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  id="file-size-warning-limit"
+                  type="number"
+                  className="settings-input"
+                  value={(localSettings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit!) ? Math.round((localSettings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit!) / (1024 * 1024)) : 100}
+                  onChange={(e) => {
+                    const mbValue = parseFloat(e.target.value) || 0;
+                    const bytesValue = mbValue * 1024 * 1024;
+                    setLocalSettings({
+                      ...localSettings,
+                      fileSizeWarningLimit: bytesValue,
+                    });
+                  }}
+                  min="0"
+                  step="1"
+                  style={{ flex: 1 }}
+                />
+                <span style={{ whiteSpace: "nowrap" }}>MB</span>
+              </div>
+              {(localSettings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit) && (
+                <p style={{ marginTop: "4px", fontSize: "0.875rem", color: "#666" }}>
+                  Current setting: {formatFileSize(localSettings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit!)}
+                </p>
+              )}
             </div>
           </div>
 

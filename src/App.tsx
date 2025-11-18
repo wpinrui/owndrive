@@ -20,7 +20,7 @@ const App: FC = () => {
     const { storage, app } = useFirebaseStorage();
     const { settings, isLoading } = useSettings();
     const db = app ? getFirestore(app) : null;
-    const { isDragging, dragHandlers, CollisionDialogComponent } = useDragAndDrop(db, storage);
+    const { isDragging, dragHandlers, CollisionDialogComponent, FileSizeDialogComponent } = useDragAndDrop(db, storage);
 
     // Check if Firebase config is missing or has empty API key on initial load
     useEffect(() => {
@@ -54,6 +54,7 @@ const App: FC = () => {
         <>
             <ToastContainer />
             {CollisionDialogComponent}
+            {FileSizeDialogComponent}
             <div className="app-container" {...dragHandlers}>
                 <DropZoneOverlay isVisible={isDragging} />
                 <div className="d-flex-tight">

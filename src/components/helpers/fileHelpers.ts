@@ -358,6 +358,42 @@ export const formatFileSize = (bytes: number): string => {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
+/**
+ * Check file sizes against the warning limit and request confirmation for files that exceed it
+ * @param files Array of files to check
+ * @param warningLimit Warning limit in bytes (from settings)
+ * @param confirmFileSize Function to request confirmation (returns Promise<boolean>)
+ * @returns Promise that resolves to array of files that should be uploaded
+ */
+export const checkFileSizesAndConfirm = async (
+    files: File[],
+    warningLimit: number | undefined,
+    confirmFileSize?: (fileName: string, fileSize: number, warningLimit: number) => Promise<boolean>
+): Promise<File[]> => {
+    if (!warningLimit || !confirmFileSize) {
+        // If no limit or confirmation function, allow all files
+        return files;
+    }
+
+    const filesToUpload: File[] = [];
+
+    for (const file of files) {
+        if (file.size > warningLimit) {
+            // File exceeds limit, request confirmation
+            const proceed = await confirmFileSize(file.name, file.size, warningLimit);
+            if (proceed) {
+                filesToUpload.push(file);
+            }
+            // If user cancels, file is not added to filesToUpload
+        } else {
+            // File is within limit, include it
+            filesToUpload.push(file);
+        }
+    }
+
+    return filesToUpload;
+};
+
 type FileIconMeta = { icon: string; className: string };
 
 const ICON_MAP: Record<string, FileIconMeta> = {
