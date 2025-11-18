@@ -48,6 +48,7 @@ export const FileRow: FC<Props> = ({ file, selected, onRowClick, onDownload, onD
             json: { icon: "code", className: "icon-code" },
             html: { icon: "language", className: "icon-code" },
             css: { icon: "style", className: "icon-code" },
+            kdbx: { icon: "vpn_key", className: "icon-key" },
             default: { icon: "insert_drive_file", className: "icon-default" },
         };
         return iconMap[ext] || iconMap.default;
