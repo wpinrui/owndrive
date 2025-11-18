@@ -259,19 +259,20 @@ export const handleFiles = async (
   for (let i = 0; i < fileArray.length; i++) {
     const file = fileArray[i];
     
-    // Check for collisions if settings are provided
+    // Check for collisions if settings or resolveCollision are provided
     let collisionResult: CollisionCheckResult | null = null;
-    if (settings) {
+    if (settings || resolveCollision) {
       collisionResult = await checkCollision(db, file, userSettings, resolveCollision, showToast);
       if (!collisionResult.shouldProceed) {
         // Skip this file
         continue;
       }
     } else {
-      // Fallback to old behavior
-      const uploadInfo = await shouldUpload(db, file);
-      if (!uploadInfo) {
-        // File already exists or doesn't need upload
+      // Fallback: check if file exists and skip if it does
+      const fileRef = doc(collection(db, "files"), file.name);
+      const snap = await getDoc(fileRef);
+      if (snap.exists()) {
+        // File already exists, skip it
         if (onProgress && totalFiles === 1) {
           onProgress(100);
         }
@@ -279,8 +280,8 @@ export const handleFiles = async (
       }
       collisionResult = {
         exists: false,
-        fileRef: uploadInfo.fileRef,
-        existingFile: uploadInfo.snap?.data() as FileMeta | null,
+        fileRef,
+        existingFile: null,
         shouldProceed: true,
         finalFileName: file.name,
       };
