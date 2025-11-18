@@ -8,15 +8,39 @@ import { SettingsButton } from "./components/SettingsButton";
 import { useFirebaseStorage } from "./hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
+import { useSettings } from "./contexts/SettingsContext";
 
 const STARRED_FIRST_STORAGE = "fileListStarredFirst";
 
 const App: FC = () => {
     const initialStarredFirst = localStorage.getItem(STARRED_FIRST_STORAGE) === "true";
     const [showStarredFirst, setShowStarredFirst] = useState<boolean>(initialStarredFirst);
+    const [shouldOpenSettings, setShouldOpenSettings] = useState(false);
+    const [hasCheckedConfig, setHasCheckedConfig] = useState(false);
     const { storage, app } = useFirebaseStorage();
+    const { settings, isLoading } = useSettings();
     const db = app ? getFirestore(app) : null;
     const { isDragging, dragHandlers, CollisionDialogComponent } = useDragAndDrop(db, storage);
+
+    // Check if Firebase config is missing or has empty API key on initial load
+    useEffect(() => {
+        // Only check once after settings have loaded
+        if (isLoading || hasCheckedConfig) {
+            return;
+        }
+
+        const config = settings.firebaseConfig;
+        const apiKey = config?.apiKey?.trim() || "";
+        const projectId = config?.projectId?.trim() || "";
+        const storageBucket = config?.storageBucket?.trim() || "";
+        
+        // Check if any required field is missing or empty
+        if (!apiKey || !projectId || !storageBucket) {
+            setShouldOpenSettings(true);
+        }
+        
+        setHasCheckedConfig(true);
+    }, [settings.firebaseConfig, isLoading, hasCheckedConfig]);
 
     useEffect(() => {
         localStorage.setItem(STARRED_FIRST_STORAGE, String(showStarredFirst));
@@ -38,7 +62,10 @@ const App: FC = () => {
                     showStarredFirst={showStarredFirst}
                     toggleStarredFirst={toggleStarredFirst}
                 />
-                <SettingsButton />
+                <SettingsButton 
+                    initialOpen={shouldOpenSettings}
+                    onOpenChange={setShouldOpenSettings}
+                />
                 </div>
                 <FileList showStarredFirst={showStarredFirst} />
             </div>

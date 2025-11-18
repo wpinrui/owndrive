@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { Firestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { Firestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import type { UserSettings, CollisionBehavior, FirebaseConfig } from "../types/settings";
 import { DEFAULT_SETTINGS } from "../types/settings";
 
@@ -10,6 +10,7 @@ interface SettingsContextType {
   updateCollisionBehavior: (behavior: CollisionBehavior) => void;
   updateStarredCollisionBehavior: (behavior: CollisionBehavior) => void;
   updateSettings: (newSettings: UserSettings) => void;
+  clearAllData: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -141,6 +142,32 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
     });
   }, [saveSettings]);
 
+  const clearAllData = useCallback(async () => {
+    // Clear all localStorage (including orphaned keys)
+    localStorage.clear();
+    
+    // Clear Firestore settings document if db is available
+    if (db) {
+      try {
+        const settingsRef = doc(db, "settings", "user");
+        await deleteDoc(settingsRef);
+      } catch (error) {
+        console.error("Error clearing Firestore settings:", error);
+        // Continue even if Firestore deletion fails
+      }
+    }
+    
+    // Reset local state to defaults
+    setFirebaseConfig(undefined);
+    setSettings({
+      ...DEFAULT_SETTINGS,
+      firebaseConfig: undefined,
+    });
+    
+    // Dispatch event to notify other components
+    window.dispatchEvent(new Event("firebaseConfigUpdated"));
+  }, [db]);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -148,6 +175,7 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
         updateCollisionBehavior,
         updateStarredCollisionBehavior,
         updateSettings,
+        clearAllData,
         isLoading,
       }}
     >

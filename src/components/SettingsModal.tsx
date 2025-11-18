@@ -1,5 +1,6 @@
 import { type FC, useState, useEffect } from "react";
 import { useSettings } from "../contexts/SettingsContext";
+import { useToast } from "../contexts/ToastContext";
 import type { CollisionBehavior } from "../types/settings";
 import "../styling/SettingsModal.scss";
 
@@ -9,12 +10,15 @@ type Props = {
 };
 
 export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, clearAllData } = useSettings();
+  const { showToast } = useToast();
   const [localSettings, setLocalSettings] = useState(settings);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setLocalSettings(settings);
+      setShowClearConfirm(false);
     }
   }, [isOpen, settings]);
 
@@ -23,6 +27,20 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
   const handleSave = () => {
     updateSettings(localSettings);
     onClose();
+  };
+
+  const handleClearAllData = async () => {
+    try {
+      await clearAllData();
+      showToast("All user data has been cleared. Reloading...", "success");
+      // Reload the page after a short delay to reset all state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      showToast("Failed to clear all data. Please try again.", "error");
+    }
   };
 
   const collisionOptions: { value: CollisionBehavior; label: string; description: string }[] = [
@@ -180,6 +198,49 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className="settings-section settings-section-danger">
+            <h3>Clear All Data</h3>
+            <p className="settings-description">
+              Permanently delete all local and remote user data, including settings, preferences, and any orphaned data. This action cannot be undone.
+            </p>
+            {!showClearConfirm ? (
+              <button
+                className="settings-button-danger"
+                onClick={() => setShowClearConfirm(true)}
+              >
+                <span className="material-icons">delete_forever</span>
+                Clear All Data
+              </button>
+            ) : (
+              <div className="settings-clear-confirm">
+                <p className="settings-clear-warning">
+                  Are you sure you want to clear all data? This will delete:
+                </p>
+                <ul className="settings-clear-list">
+                  <li>All localStorage data (including orphaned keys)</li>
+                  <li>Firebase configuration</li>
+                  <li>User preferences and settings</li>
+                  <li>Firestore settings document</li>
+                </ul>
+                <div className="settings-clear-actions">
+                  <button
+                    className="settings-button-secondary"
+                    onClick={() => setShowClearConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="settings-button-danger"
+                    onClick={handleClearAllData}
+                  >
+                    <span className="material-icons">delete_forever</span>
+                    Yes, Clear Everything
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
