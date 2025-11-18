@@ -1,6 +1,6 @@
 import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot, updateDoc, deleteDoc } from "firebase/firestore";
 import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import type { FileMeta } from "./fileTypes";
+import type { FileMeta } from "../fileTypes";
 
 export const shouldUpload = async (
   db: Firestore,
@@ -75,4 +75,49 @@ export const deleteFileFromStorageAndFirestore = async (db: Firestore, storage: 
 export const getFileDownloadUrl = async (storage: FirebaseStorage, file: FileMeta) => {
   const storageRef = ref(storage, file.storagePath);
   return await getDownloadURL(storageRef);
+};
+
+export const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+};
+
+type FileIconMeta = { icon: string; className: string };
+
+const ICON_MAP: Record<string, FileIconMeta> = {
+    pdf: { icon: "picture_as_pdf", className: "icon-pdf" },
+    doc: { icon: "description", className: "icon-doc" },
+    docx: { icon: "description", className: "icon-doc" },
+    xls: { icon: "grid_on", className: "icon-xls" },
+    xlsx: { icon: "grid_on", className: "icon-xls" },
+    ppt: { icon: "slideshow", className: "icon-ppt" },
+    pptx: { icon: "slideshow", className: "icon-ppt" },
+    txt: { icon: "note", className: "icon-txt" },
+    md: { icon: "article", className: "icon-md" },
+    csv: { icon: "table_chart", className: "icon-csv" },
+    jpg: { icon: "image", className: "icon-img" },
+    jpeg: { icon: "image", className: "icon-img" },
+    png: { icon: "image", className: "icon-img" },
+    gif: { icon: "image", className: "icon-img" },
+    mp3: { icon: "audiotrack", className: "icon-audio" },
+    wav: { icon: "audiotrack", className: "icon-audio" },
+    mp4: { icon: "movie", className: "icon-video" },
+    mov: { icon: "movie", className: "icon-video" },
+    zip: { icon: "folder_zip", className: "icon-archive" },
+    rar: { icon: "folder_zip", className: "icon-archive" },
+    js: { icon: "code", className: "icon-code" },
+    ts: { icon: "code", className: "icon-code" },
+    json: { icon: "code", className: "icon-code" },
+    html: { icon: "language", className: "icon-code" },
+    css: { icon: "style", className: "icon-code" },
+    kdbx: { icon: "vpn_key", className: "icon-key" },
+};
+
+export const getFileIcon = (fileName: string): FileIconMeta => {
+    const ext = fileName.split(".").pop()?.toLowerCase() || "";
+    const defaultIcon: FileIconMeta = { icon: "insert_drive_file", className: "icon-default" };
+    return ICON_MAP[ext] || defaultIcon;
 };

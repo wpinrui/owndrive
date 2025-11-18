@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import './FileList.scss'
+import '../styling/FileList.scss';
 
 interface FileListControlsProps {
     showStarredFirst: boolean;
@@ -20,7 +20,6 @@ export const StarredFirstToggle: FC<FileListControlsProps> = ({
                     onChange={toggleStarredFirst}
                 />
 
-                {/* The visible button element */}
                 <span className="toggle-button-label">
                     {showStarredFirst ?
                         '⭐ Starred Files First' :

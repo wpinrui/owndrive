@@ -1,17 +1,14 @@
 import { type FC, useEffect, useState, useCallback, type MouseEvent, useRef, useMemo } from "react";
 import { collection, onSnapshot, getFirestore } from "firebase/firestore";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
-import {
-    deleteFileFromStorageAndFirestore,
-    getFileDownloadUrl,
-    toggleStarInFirestore
-} from "./fileHelpers";
+
 import type { FileMeta } from "./fileTypes";
 import { FileRow } from "./FileRow";
 import { FileTableHeader } from "./FileTableHeader";
 import { EmptyState } from "./EmptyState";
-import { sortFiles, buildRange, mergeSelection } from "./fileListHelpers";
-import "./FileList.scss";
+import "../styling/FileList.scss";
+import { toggleStarInFirestore, deleteFileFromStorageAndFirestore, getFileDownloadUrl } from "./helpers/fileHelpers";
+import { sortFiles, buildRange, mergeSelection } from "./helpers/fileListHelpers";
 
 export type SortKey = "name" | "size" | "lastModified" | "starred" | "type";
 export type SortOrder = "asc" | "desc";

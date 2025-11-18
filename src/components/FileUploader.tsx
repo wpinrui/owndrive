@@ -1,8 +1,8 @@
 import { type FC, useCallback, useRef, useState } from "react";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
-import { handleFiles } from "./fileHelpers";
-import "./FileUploader.scss";
+import "../styling/FileUploader.scss";
+import { handleFiles } from "./helpers/fileHelpers";
 
 const FileUploader: FC = () => {
   const { storage, app } = useFirebaseStorage();
