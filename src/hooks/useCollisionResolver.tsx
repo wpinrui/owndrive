@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { CollisionDialog } from "../components/CollisionDialog";
 import type { FileMeta } from "../components/fileTypes";
-import React from "react";
 
 export type CollisionAction = "replace" | "skip" | "rename";
 
