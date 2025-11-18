@@ -1,5 +1,5 @@
-import type { FileMeta } from "./fileTypes";
-import type { SortKey, SortOrder } from "./FileList";
+import type { FileMeta } from "../fileTypes";
+import type { SortKey, SortOrder } from "../FileList";
 
 export function sortFiles(
     files: FileMeta[],

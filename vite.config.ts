@@ -2,13 +2,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
 import electron from 'vite-plugin-electron/simple'
+import type { ElectronOptions } from 'vite-plugin-electron'
+
+type ElectronOnstartArgs = Parameters<NonNullable<ElectronOptions['onstart']>>[0]
 
 let electronStarted = false
 
 const electronEntries = {
   main: {
     entry: resolve(__dirname, 'electron/main.ts'),
-    onstart({ startup, reload }) {
+    onstart({ startup, reload }: ElectronOnstartArgs) {
       if (!electronStarted) {
         electronStarted = true
         startup()
