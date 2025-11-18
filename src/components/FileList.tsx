@@ -13,7 +13,7 @@ import { EmptyState } from "./EmptyState";
 import { sortFiles, buildRange, mergeSelection } from "./fileListHelpers";
 import "./FileList.scss";
 
-export type SortKey = "name" | "size" | "lastModified" | "starred";
+export type SortKey = "name" | "size" | "lastModified" | "starred" | "type";
 export type SortOrder = "asc" | "desc";
 
 const FileList: FC = () => {

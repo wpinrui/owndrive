@@ -9,6 +9,7 @@ export function sortFiles(
 ): FileMeta[] {
     const sorted = [...files].sort((a, b) => {
         let result = 0;
+
         switch (sortKey) {
             case "name":
                 result = a.name.localeCompare(b.name);
@@ -22,9 +23,16 @@ export function sortFiles(
             case "starred":
                 result = Number(a.starred) - Number(b.starred);
                 break;
+            case "type":
+                const aType = a.name.split(".").pop()?.toLowerCase() || "";
+                const bType = b.name.split(".").pop()?.toLowerCase() || "";
+                result = aType.localeCompare(bType);
+                break;
         }
+
         return sortOrder === "asc" ? result : -result;
     });
+
     return sorted;
 }
 

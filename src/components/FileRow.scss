@@ -3,7 +3,16 @@
         background-color: #f1f1f1;
     }
 
+    td {
+        padding: 8px 12px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
     .col-icon {
+        width: 40px;
+        text-align: center;
+
         .file-thumbnail {
             font-size: 1.8rem;
             display: inline-block;
@@ -68,20 +77,40 @@
     }
 
     .col-name {
+        width: 25%;
         font-weight: 500;
         padding-left: 8px;
+        text-align: left;
     }
 
-    .col-size,
-    .col-modified,
-    .col-starred,
-    .col-actions {
+    .col-type {
+        width: 10%;
+        text-align: center;
+    }
+
+    .col-size {
+        width: 10%;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .col-modified {
+        width: 20%;
+        text-align: left;
+    }
+
+    .col-starred {
+        width: 5%;
         text-align: center;
     }
 
     .col-actions {
+        width: 15%;
+        text-align: center;
+
         .action-buttons {
             display: flex;
+            justify-content: center;
             gap: 4px;
 
             .action-btn {
@@ -110,5 +139,34 @@
                 }
             }
         }
+    }
+}
+
+/* Table header alignment */
+th {
+    padding: 8px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    &.col-name {
+        text-align: left;
+    }
+
+    &.col-type {
+        text-align: center !important;
+    }
+
+    &.col-size {
+        text-align: right !important;
+        font-variant-numeric: tabular-nums;
+    }
+
+    &.col-modified {
+        text-align: left;
+    }
+
+    &.col-starred,
+    &.col-actions {
+        text-align: center;
     }
 }
