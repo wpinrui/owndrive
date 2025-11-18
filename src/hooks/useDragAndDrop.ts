@@ -54,38 +54,83 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
             return;
         }
 
-        // Only process single file as requested
-        const fileToUpload = files[0];
-        const fileName = fileToUpload.name;
-        const fileSize = formatFileSize(fileToUpload.size);
+        const fileArray = Array.from(files);
         
-        const toastId = showToast(
-            `Uploading ${fileName} (${fileSize})...`,
-            "loading",
-            { duration: 0 }
-        );
+        // Show toast for each file being uploaded
+        const toastIds = fileArray.map((file) => {
+            const fileSize = formatFileSize(file.size);
+            return showToast(
+                `Uploading ${file.name} (${fileSize})...`,
+                "loading",
+                { duration: 0 }
+            );
+        });
+
+        let combinedToastId: string | undefined;
 
         try {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(fileToUpload);
-            const singleFileList = dataTransfer.files;
+            // For multiple files, show combined progress
+            if (fileArray.length > 1) {
+                combinedToastId = showToast(
+                    `Uploading ${fileArray.length} files...`,
+                    "loading",
+                    { duration: 0, progress: 0 }
+                );
+
+                await handleFiles(db, storage, files, (progress) => {
+                    updateToast(combinedToastId!, { progress });
+                });
+
+                // Update individual toasts
+                toastIds.forEach((id) => {
+                    updateToast(id, {
+                        type: "success",
+                        message: "Upload complete",
+                        duration: 4000,
+                    });
+                });
+
+                updateToast(combinedToastId, {
+                    type: "success",
+                    message: `Successfully uploaded ${fileArray.length} files`,
+                    duration: 4000,
+                });
+            } else {
+                // Single file upload
+                const file = fileArray[0];
+                const toastId = toastIds[0];
+
+                await handleFiles(db, storage, files, (progress) => {
+                    updateToast(toastId, { progress });
+                });
+
+                updateToast(toastId, {
+                    type: "success",
+                    message: `Successfully uploaded ${file.name}`,
+                    duration: 4000,
+                });
+            }
+        } catch (err: any) {
+            console.error("Error uploading files:", err);
+            const errorMessage = err.message || "Unknown error";
             
-            await handleFiles(db, storage, singleFileList, (progress) => {
-                updateToast(toastId, { progress });
+            // Update all toasts to show error
+            toastIds.forEach((id) => {
+                updateToast(id, {
+                    type: "error",
+                    message: errorMessage,
+                    duration: 4000,
+                });
             });
 
-            updateToast(toastId, {
-                type: "success",
-                message: `Successfully uploaded ${fileName}`,
-                duration: 4000,
-            });
-        } catch (err: any) {
-            console.error("Error uploading file:", err);
-            updateToast(toastId, {
-                type: "error",
-                message: `Failed to upload ${fileName}: ${err.message || "Unknown error"}`,
-                duration: 4000,
-            });
+            // Update combined toast if it exists
+            if (combinedToastId) {
+                updateToast(combinedToastId, {
+                    type: "error",
+                    message: `Failed to upload files: ${errorMessage}`,
+                    duration: 4000,
+                });
+            }
         }
     }, [db, storage, showToast, updateToast]);
 

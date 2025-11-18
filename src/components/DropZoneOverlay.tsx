@@ -11,7 +11,7 @@ export const DropZoneOverlay: FC<Props> = ({ isVisible }) => {
         <div className="drop-zone-overlay">
             <div className="drop-zone-content">
                 <span className="material-icons drop-zone-icon">cloud_upload</span>
-                <p className="drop-zone-text">Drop file here to upload</p>
+                <p className="drop-zone-text">Drop files here to upload</p>
             </div>
         </div>
     );
