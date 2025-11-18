@@ -1,7 +1,6 @@
 import type { FileMeta } from "./fileTypes";
 import type { SortKey, SortOrder } from "./FileList";
 
-/** Return sorted files */
 export function sortFiles(
     files: FileMeta[],
     sortKey: SortKey,
@@ -36,7 +35,6 @@ export function sortFiles(
     return sorted;
 }
 
-/** Build a range of IDs between two indices (inclusive) */
 export function buildRange(
     files: FileMeta[],
     startIndex: number,
@@ -47,7 +45,6 @@ export function buildRange(
     return files.slice(start, end + 1).map(f => f.id);
 }
 
-/** Merge selected IDs with a new set of IDs */
 export function mergeSelection(
     prev: string[],
     additional: string[]

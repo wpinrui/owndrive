@@ -1,4 +1,3 @@
-// fileHelpers.ts
 import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot, updateDoc, deleteDoc } from "firebase/firestore";
 import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import type { FileMeta } from "./fileTypes";
@@ -40,13 +39,13 @@ export const updateFirestore = async (
   existingSnap: DocumentSnapshot | null
 ): Promise<void> => {
   await setDoc(fileRef, {
-    id: storageId,                 // now unique with timestamp
-    name: file.name,               // display name
+    id: storageId,
+    name: file.name,
     size: file.size,
     lastModified: file.lastModified,
     starred: existingSnap?.data()?.starred ?? false,
     uploadedAt: Date.now(),
-    storagePath: storageId,        // same as cloud storage name
+    storagePath: storageId,
   });
 };
 

@@ -1,4 +1,3 @@
-// EmptyState.tsx
 import { type FC } from "react";
 
 export const EmptyState: FC = () => (

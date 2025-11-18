@@ -1,7 +1,7 @@
 import { type FC, useState, useEffect } from "react";
 import FileList from "./components/FileList";
 import FileUploader from "./components/FileUploader";
-import { StarredFirstToggle } from "./components/StarredFirstToggle"; // Assuming the path is correct
+import { StarredFirstToggle } from "./components/StarredFirstToggle";
 
 const STARRED_FIRST_STORAGE = "fileListStarredFirst";
 
