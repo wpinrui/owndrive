@@ -1,15 +1,177 @@
 import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot, updateDoc, deleteDoc } from "firebase/firestore";
 import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import type { FileMeta } from "../fileTypes";
+import type { UserSettings, CollisionBehavior } from "../../types/settings";
+import type { CollisionAction } from "../../hooks/useCollisionResolver";
 
-export const shouldUpload = async (
+export interface CollisionCheckResult {
+  exists: boolean;
+  fileRef: DocumentReference;
+  existingFile: FileMeta | null;
+  shouldProceed: boolean;
+  finalFileName: string;
+}
+
+export const checkCollision = async (
   db: Firestore,
-  file: File
-): Promise<{ fileRef: DocumentReference; snap: DocumentSnapshot | null } | null> => {
+  file: File,
+  settings: UserSettings,
+  resolveCollision?: (fileName: string, existingFile: FileMeta, newFile: File, isStarred: boolean) => Promise<CollisionAction>,
+  showToast?: (message: string, type: "info" | "success" | "error", options?: { duration?: number }) => string
+): Promise<CollisionCheckResult> => {
   const fileRef = doc(collection(db, "files"), file.name);
   const snap = await getDoc(fileRef);
-  if (snap.exists() && file.lastModified <= snap.data()?.lastModified) return null;
-  return { fileRef, snap: snap.exists() ? snap : null };
+  
+  if (!snap.exists()) {
+    return {
+      exists: false,
+      fileRef,
+      existingFile: null,
+      shouldProceed: true,
+      finalFileName: file.name,
+    };
+  }
+
+  const existingFile = snap.data() as FileMeta;
+  const isStarred = existingFile.starred || false;
+  const behavior: CollisionBehavior = isStarred 
+    ? settings.starredCollisionBehavior 
+    : settings.collisionBehavior;
+
+  // Determine behavior
+  if (behavior === "ask-every-time") {
+    if (!resolveCollision) {
+      // Fallback if resolver not provided
+      showToast?.(
+        `File "${file.name}" already exists. Skipping upload.`,
+        "info",
+        { duration: 4000 }
+      );
+      return {
+        exists: true,
+        fileRef,
+        existingFile,
+        shouldProceed: false,
+        finalFileName: file.name,
+      };
+    }
+
+    const action = await resolveCollision(file.name, existingFile, file, isStarred);
+    
+    if (action === "skip") {
+      showToast?.(
+        `Skipped upload of "${file.name}"`,
+        "info",
+        { duration: 3000 }
+      );
+      return {
+        exists: true,
+        fileRef,
+        existingFile,
+        shouldProceed: false,
+        finalFileName: file.name,
+      };
+    } else if (action === "replace") {
+      showToast?.(
+        `Replacing existing file "${file.name}"`,
+        "info",
+        { duration: 3000 }
+      );
+      return {
+        exists: true,
+        fileRef,
+        existingFile,
+        shouldProceed: true,
+        finalFileName: file.name,
+      };
+    } else if (action === "rename") {
+      const newFileName = await generateUniqueFileName(file.name, db);
+      const newFileRef = doc(collection(db, "files"), newFileName);
+      showToast?.(
+        `Renaming "${file.name}" to "${newFileName}"`,
+        "info",
+        { duration: 3000 }
+      );
+      return {
+        exists: true,
+        fileRef: newFileRef,
+        existingFile: null,
+        shouldProceed: true,
+        finalFileName: newFileName,
+      };
+    }
+  } else if (behavior === "accept-newer-reject-older") {
+    if (file.lastModified > existingFile.lastModified) {
+      showToast?.(
+        `Replacing older file "${file.name}" with newer version`,
+        "info",
+        { duration: 3000 }
+      );
+      return {
+        exists: true,
+        fileRef,
+        existingFile,
+        shouldProceed: true,
+        finalFileName: file.name,
+      };
+    } else {
+      showToast?.(
+        `Skipping "${file.name}" - existing file is newer`,
+        "info",
+        { duration: 3000 }
+      );
+      return {
+        exists: true,
+        fileRef,
+        existingFile,
+        shouldProceed: false,
+        finalFileName: file.name,
+      };
+    }
+  } else if (behavior === "keep-both-rename") {
+    const newFileName = await generateUniqueFileName(file.name, db);
+    const newFileRef = doc(collection(db, "files"), newFileName);
+    showToast?.(
+      `Renaming "${file.name}" to "${newFileName}" to keep both files`,
+      "info",
+      { duration: 3000 }
+    );
+    return {
+      exists: true,
+      fileRef: newFileRef,
+      existingFile: null,
+      shouldProceed: true,
+      finalFileName: newFileName,
+    };
+  }
+
+  // Default: skip
+  return {
+    exists: true,
+    fileRef,
+    existingFile,
+    shouldProceed: false,
+    finalFileName: file.name,
+  };
+};
+
+const generateUniqueFileName = async (originalName: string, db: Firestore): Promise<string> => {
+  const dotIndex = originalName.lastIndexOf(".");
+  const baseName = dotIndex !== -1 ? originalName.slice(0, dotIndex) : originalName;
+  const extension = dotIndex !== -1 ? originalName.slice(dotIndex) : "";
+  
+  let counter = 1;
+  let newName = `${baseName} (${counter})${extension}`;
+  
+  while (true) {
+    const fileRef = doc(collection(db, "files"), newName);
+    const snap = await getDoc(fileRef);
+    if (!snap.exists()) {
+      return newName;
+    }
+    counter++;
+    newName = `${baseName} (${counter})${extension}`;
+  }
 };
 
 const formatTimestamp = (timestamp: number) => {
@@ -81,23 +243,50 @@ export const handleFiles = async (
   db: Firestore,
   storage: FirebaseStorage,
   files: FileList,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  settings?: UserSettings,
+  resolveCollision?: (fileName: string, existingFile: FileMeta, newFile: File, isStarred: boolean) => Promise<CollisionAction>,
+  showToast?: (message: string, type: "info" | "success" | "error", options?: { duration?: number }) => string
 ) => {
   const fileArray = Array.from(files);
   const totalFiles = fileArray.length;
+  const defaultSettings: UserSettings = {
+    collisionBehavior: "ask-every-time",
+    starredCollisionBehavior: "ask-every-time",
+  };
+  const userSettings = settings || defaultSettings;
 
   for (let i = 0; i < fileArray.length; i++) {
     const file = fileArray[i];
-    const uploadInfo = await shouldUpload(db, file);
-    if (!uploadInfo) {
-      // File already exists or doesn't need upload
-      if (onProgress && totalFiles === 1) {
-        onProgress(100);
+    
+    // Check for collisions if settings are provided
+    let collisionResult: CollisionCheckResult | null = null;
+    if (settings) {
+      collisionResult = await checkCollision(db, file, userSettings, resolveCollision, showToast);
+      if (!collisionResult.shouldProceed) {
+        // Skip this file
+        continue;
       }
-      continue;
+    } else {
+      // Fallback to old behavior
+      const uploadInfo = await shouldUpload(db, file);
+      if (!uploadInfo) {
+        // File already exists or doesn't need upload
+        if (onProgress && totalFiles === 1) {
+          onProgress(100);
+        }
+        continue;
+      }
+      collisionResult = {
+        exists: false,
+        fileRef: uploadInfo.fileRef,
+        existingFile: uploadInfo.snap?.data() as FileMeta | null,
+        shouldProceed: true,
+        finalFileName: file.name,
+      };
     }
 
-    const { fileRef, snap } = uploadInfo;
+    const { fileRef, existingFile, finalFileName } = collisionResult!;
     
     // For single file, pass progress callback directly
     // For multiple files, calculate progress based on file index
@@ -110,8 +299,32 @@ export const handleFiles = async (
         }
       : undefined;
 
+    // If replacing, delete old storage file first
+    if (existingFile && existingFile.storagePath) {
+      try {
+        const oldStorageRef = ref(storage, existingFile.storagePath);
+        await deleteObject(oldStorageRef);
+      } catch (error) {
+        console.warn("Could not delete old storage file:", error);
+      }
+    }
+
     const storageId = await uploadToStorage(storage, file, fileProgressCallback);
-    await updateFirestore(fileRef, file, storageId, snap);
+    
+    // Update Firestore with the final file name
+    const finalFileRef = doc(collection(db, "files"), finalFileName);
+    const finalSnap = await getDoc(finalFileRef);
+    const existingSnap = finalSnap.exists() ? finalSnap : null;
+    
+    await setDoc(finalFileRef, {
+      id: storageId,
+      name: finalFileName,
+      size: file.size,
+      lastModified: file.lastModified,
+      starred: existingFile?.starred ?? (existingSnap?.data()?.starred ?? false),
+      uploadedAt: Date.now(),
+      storagePath: storageId,
+    });
   }
 
   if (onProgress) {

@@ -3,9 +3,13 @@ import { Firestore } from "firebase/firestore";
 import { type FirebaseStorage } from "firebase/storage";
 import { handleFiles, formatFileSize } from "../components/helpers/fileHelpers";
 import { useToast } from "../contexts/ToastContext";
+import { useSettings } from "../contexts/SettingsContext";
+import { useCollisionResolver } from "./useCollisionResolver";
 
 export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | null) => {
     const { showToast, updateToast } = useToast();
+    const { settings } = useSettings();
+    const { resolveCollision, CollisionDialogComponent } = useCollisionResolver();
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const dragCounter = useRef<number>(0);
 
@@ -77,9 +81,17 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
                     { duration: 0, progress: 0 }
                 );
 
-                await handleFiles(db, storage, files, (progress) => {
-                    updateToast(combinedToastId!, { progress });
-                });
+                await handleFiles(
+                    db,
+                    storage,
+                    files,
+                    (progress) => {
+                        updateToast(combinedToastId!, { progress });
+                    },
+                    settings,
+                    resolveCollision,
+                    (message, type, options) => showToast(message, type, options)
+                );
 
                 // Update individual toasts
                 toastIds.forEach((id) => {
@@ -100,9 +112,17 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
                 const file = fileArray[0];
                 const toastId = toastIds[0];
 
-                await handleFiles(db, storage, files, (progress) => {
-                    updateToast(toastId, { progress });
-                });
+                await handleFiles(
+                    db,
+                    storage,
+                    files,
+                    (progress) => {
+                        updateToast(toastId, { progress });
+                    },
+                    settings,
+                    resolveCollision,
+                    (message, type, options) => showToast(message, type, options)
+                );
 
                 updateToast(toastId, {
                     type: "success",
@@ -132,7 +152,7 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
                 });
             }
         }
-    }, [db, storage, showToast, updateToast]);
+    }, [db, storage, showToast, updateToast, settings, resolveCollision]);
 
     return {
         isDragging,
@@ -142,6 +162,7 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
             onDragLeave: handleDragLeave,
             onDrop: handleDrop,
         },
+        CollisionDialogComponent,
     };
 };
 

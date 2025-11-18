@@ -4,6 +4,7 @@ import FileUploader from "./components/FileUploader";
 import { StarredFirstToggle } from "./components/StarredFirstToggle";
 import { DropZoneOverlay } from "./components/DropZoneOverlay";
 import { ToastContainer } from "./components/ToastContainer";
+import { SettingsButton } from "./components/SettingsButton";
 import { useFirebaseStorage } from "./hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
@@ -15,7 +16,7 @@ const App: FC = () => {
     const [showStarredFirst, setShowStarredFirst] = useState<boolean>(initialStarredFirst);
     const { storage, app } = useFirebaseStorage();
     const db = app ? getFirestore(app) : null;
-    const { isDragging, dragHandlers } = useDragAndDrop(db, storage);
+    const { isDragging, dragHandlers, CollisionDialogComponent } = useDragAndDrop(db, storage);
 
     useEffect(() => {
         localStorage.setItem(STARRED_FIRST_STORAGE, String(showStarredFirst));
@@ -28,6 +29,7 @@ const App: FC = () => {
     return (
         <>
             <ToastContainer />
+            {CollisionDialogComponent}
             <div className="app-container" {...dragHandlers}>
                 <DropZoneOverlay isVisible={isDragging} />
                 <div className="d-flex">
@@ -35,7 +37,8 @@ const App: FC = () => {
                 <StarredFirstToggle 
                     showStarredFirst={showStarredFirst}
                     toggleStarredFirst={toggleStarredFirst}
-                /> 
+                />
+                <SettingsButton />
                 </div>
                 <FileList showStarredFirst={showStarredFirst} />
             </div>
