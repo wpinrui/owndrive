@@ -48,14 +48,14 @@ const FileUploader: FC = () => {
             updateToast(id, {
               type: "success",
               message: "Upload complete",
-              duration: 2000,
+              duration: 4000,
             });
           });
 
           updateToast(combinedToastId, {
             type: "success",
             message: `Successfully uploaded ${fileArray.length} files`,
-            duration: 3000,
+            duration: 4000,
           });
         } else {
           // Single file upload
@@ -69,7 +69,7 @@ const FileUploader: FC = () => {
           updateToast(toastId, {
             type: "success",
             message: `Successfully uploaded ${file.name}`,
-            duration: 3000,
+            duration: 4000,
           });
         }
       } catch (err: any) {
@@ -81,7 +81,7 @@ const FileUploader: FC = () => {
           updateToast(id, {
             type: "error",
             message: errorMessage,
-            duration: 5000,
+            duration: 4000,
           });
         });
 
@@ -90,7 +90,7 @@ const FileUploader: FC = () => {
           updateToast(combinedToastId, {
             type: "error",
             message: `Failed to upload files: ${errorMessage}`,
-            duration: 5000,
+            duration: 4000,
           });
         }
       } finally {

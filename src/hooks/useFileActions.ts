@@ -22,13 +22,13 @@ export function useFileActions(db: any, storage: any, resetSelection: () => void
                     message: items.length > 1
                         ? `Successfully ${action.toLowerCase()} ${items.length} files`
                         : `Successfully ${action.toLowerCase()} ${items[0].name}`,
-                    duration: 2000,
+                    duration: 4000,
                 });
             } catch (err: any) {
                 updateToast(toastId, {
                     type: "error",
                     message: `Failed to ${action.toLowerCase()}: ${err.message || "Unknown error"}`,
-                    duration: 5000,
+                    duration: 4000,
                 });
             }
         },
@@ -41,14 +41,13 @@ export function useFileActions(db: any, storage: any, resetSelection: () => void
             
             const filesToDelete = items.filter(f => !f.starred);
             if (filesToDelete.length === 0) {
-                showToast("Cannot delete starred files", "info", { duration: 3000 });
+                showToast("Cannot delete starred files", "info", { duration: 4000 });
                 return;
             }
 
             const toastId = filesToDelete.length > 1
                 ? showToast(`Deleting ${filesToDelete.length} files...`, "loading", { duration: 0, progress: 0 })
                 : showToast(`Deleting ${filesToDelete[0].name}...`, "loading", { duration: 0 });
-            console.log("Delete toast created with ID:", toastId);
 
             try {
                 for (let i = 0; i < filesToDelete.length; i++) {
@@ -67,14 +66,14 @@ export function useFileActions(db: any, storage: any, resetSelection: () => void
                     message: filesToDelete.length > 1
                         ? `Successfully deleted ${filesToDelete.length} files`
                         : `Successfully deleted ${filesToDelete[0].name}`,
-                    duration: 3000,
+                    duration: 4000,
                 });
                 resetSelection();
             } catch (err: any) {
                 updateToast(toastId, {
                     type: "error",
                     message: `Failed to delete: ${err.message || "Unknown error"}`,
-                    duration: 5000,
+                    duration: 4000,
                 });
             }
         },
@@ -105,13 +104,13 @@ export function useFileActions(db: any, storage: any, resetSelection: () => void
                     message: items.length > 1
                         ? `Opened ${items.length} files for download`
                         : `Opened ${items[0].name} for download`,
-                    duration: 2000,
+                    duration: 4000,
                 });
             } catch (err: any) {
                 updateToast(toastId, {
                     type: "error",
                     message: `Failed to download: ${err.message || "Unknown error"}`,
-                    duration: 5000,
+                    duration: 4000,
                 });
             }
         },

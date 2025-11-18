@@ -5,11 +5,6 @@ import "../styling/ToastContainer.scss";
 export const ToastContainer: FC = () => {
     const { toasts, dismissToast } = useToast();
 
-    // Debug logging
-    if (toasts.length > 0) {
-        console.log("ToastContainer: Rendering", toasts.length, "toasts", toasts);
-    }
-
     if (toasts.length === 0) return null;
 
     return (

@@ -408,13 +408,6 @@ li {
     }
 }
 
-/* Toast spinner animation */
-@keyframes toast-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 /* Transitions */
 .fade-enter {
     opacity: 0;

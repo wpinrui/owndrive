@@ -55,7 +55,7 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
         }
 
         // Only process single file as requested
-        const fileToUpload = files.length > 1 ? files[0] : files[0];
+        const fileToUpload = files[0];
         const fileName = fileToUpload.name;
         const fileSize = formatFileSize(fileToUpload.size);
         
@@ -64,7 +64,6 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
             "loading",
             { duration: 0 }
         );
-        console.log("Toast created with ID:", toastId);
 
         try {
             const dataTransfer = new DataTransfer();
@@ -78,14 +77,14 @@ export const useDragAndDrop = (db: Firestore | null, storage: FirebaseStorage | 
             updateToast(toastId, {
                 type: "success",
                 message: `Successfully uploaded ${fileName}`,
-                duration: 3000,
+                duration: 4000,
             });
         } catch (err: any) {
             console.error("Error uploading file:", err);
             updateToast(toastId, {
                 type: "error",
                 message: `Failed to upload ${fileName}: ${err.message || "Unknown error"}`,
-                duration: 5000,
+                duration: 4000,
             });
         }
     }, [db, storage, showToast, updateToast]);

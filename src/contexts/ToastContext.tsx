@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
 
 export type ToastType = "success" | "error" | "info" | "loading";
 
@@ -30,6 +30,7 @@ export const useToast = () => {
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
+    const timeoutRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
     const showToast = useCallback(
         (
@@ -43,20 +44,18 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
                 message,
                 type,
                 progress: options?.progress,
-                duration: options?.duration ?? (type === "error" ? 5000 : type === "loading" ? 0 : 3000),
+                duration: options?.duration ?? (type === "loading" ? 0 : 4000),
             };
 
-            setToasts((prev) => {
-                const newToasts = [...prev, toast];
-                console.log("ToastContext: Adding toast", toast.id, "Total toasts:", newToasts.length);
-                return newToasts;
-            });
+            setToasts((prev) => [...prev, toast]);
 
             // Auto-dismiss if duration is set
             if (toast.duration && toast.duration > 0) {
-                setTimeout(() => {
+                const timeout = setTimeout(() => {
                     setToasts((prev) => prev.filter((t) => t.id !== id));
+                    timeoutRefs.current.delete(id);
                 }, toast.duration);
+                timeoutRefs.current.set(id, timeout);
             }
 
             return id;
@@ -65,16 +64,53 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     );
 
     const updateToast = useCallback((id: string, updates: Partial<Omit<Toast, "id">>) => {
-        setToasts((prev) =>
-            prev.map((toast) => (toast.id === id ? { ...toast, ...updates } : toast))
-        );
+        setToasts((prev) => {
+            const existingToast = prev.find((t) => t.id === id);
+            if (!existingToast) return prev;
+
+            const updatedToast = { ...existingToast, ...updates };
+            
+            // If duration is being updated to a positive value, set up timeout
+            if (updates.duration !== undefined && updates.duration > 0) {
+                // Clear any existing timeout for this toast
+                const existingTimeout = timeoutRefs.current.get(id);
+                if (existingTimeout) {
+                    clearTimeout(existingTimeout);
+                }
+                
+                // Set up new timeout
+                const timeout = setTimeout(() => {
+                    setToasts((prev) => prev.filter((t) => t.id !== id));
+                    timeoutRefs.current.delete(id);
+                }, updates.duration);
+                timeoutRefs.current.set(id, timeout);
+            } else if (updates.duration === 0) {
+                // If duration is set to 0, clear any existing timeout
+                const existingTimeout = timeoutRefs.current.get(id);
+                if (existingTimeout) {
+                    clearTimeout(existingTimeout);
+                    timeoutRefs.current.delete(id);
+                }
+            }
+
+            return prev.map((toast) => (toast.id === id ? updatedToast : toast));
+        });
     }, []);
 
     const dismissToast = useCallback((id: string) => {
+        // Clear timeout if it exists
+        const timeout = timeoutRefs.current.get(id);
+        if (timeout) {
+            clearTimeout(timeout);
+            timeoutRefs.current.delete(id);
+        }
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, []);
 
     const dismissAllToasts = useCallback(() => {
+        // Clear all timeouts
+        timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+        timeoutRefs.current.clear();
         setToasts([]);
     }, []);
 
