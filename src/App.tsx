@@ -3,6 +3,7 @@ import FileList from "./components/FileList";
 import FileUploader from "./components/FileUploader";
 import { StarredFirstToggle } from "./components/StarredFirstToggle";
 import { DropZoneOverlay } from "./components/DropZoneOverlay";
+import { ToastContainer } from "./components/ToastContainer";
 import { useFirebaseStorage } from "./hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
@@ -25,17 +26,20 @@ const App: FC = () => {
     };
 
     return (
-        <div className="app-container" {...dragHandlers}>
-            <DropZoneOverlay isVisible={isDragging} />
-            <div className="d-flex">
+        <>
+            <ToastContainer />
+            <div className="app-container" {...dragHandlers}>
+                <DropZoneOverlay isVisible={isDragging} />
+                <div className="d-flex">
                 <FileUploader />
                 <StarredFirstToggle 
                     showStarredFirst={showStarredFirst}
                     toggleStarredFirst={toggleStarredFirst}
                 /> 
+                </div>
+                <FileList showStarredFirst={showStarredFirst} />
             </div>
-            <FileList showStarredFirst={showStarredFirst} />
-        </div>
+        </>
     );
 }
 

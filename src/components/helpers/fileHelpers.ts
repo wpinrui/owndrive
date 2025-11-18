@@ -1,5 +1,5 @@
 import { Firestore, collection, doc, getDoc, setDoc, DocumentReference, DocumentSnapshot, updateDoc, deleteDoc } from "firebase/firestore";
-import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { deleteObject, type FirebaseStorage, getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import type { FileMeta } from "../fileTypes";
 
 export const shouldUpload = async (
@@ -19,7 +19,11 @@ const formatTimestamp = (timestamp: number) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
 };
 
-export const uploadToStorage = async (storage: FirebaseStorage, file: File): Promise<string> => {
+export const uploadToStorage = async (
+  storage: FirebaseStorage,
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<string> => {
   const timestamp = formatTimestamp(file.lastModified);
 
   const dotIndex = file.name.lastIndexOf(".");
@@ -27,8 +31,32 @@ export const uploadToStorage = async (storage: FirebaseStorage, file: File): Pro
   const extension = dotIndex !== -1 ? file.name.slice(dotIndex) : "";
 
   const storageId = `${baseName}-${timestamp}${extension}`;
-  await uploadBytes(ref(storage, storageId), file);
-  return storageId;
+  const storageRef = ref(storage, storageId);
+
+  if (onProgress) {
+    // Use resumable upload for progress tracking
+    return new Promise((resolve, reject) => {
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          onProgress(Math.round(progress));
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          resolve(storageId);
+        }
+      );
+    });
+  } else {
+    // Use simple upload for smaller files or when progress isn't needed
+    await uploadBytes(storageRef, file);
+    return storageId;
+  }
 };
 
 
@@ -49,14 +77,45 @@ export const updateFirestore = async (
   });
 };
 
-export const handleFiles = async (db: Firestore, storage: FirebaseStorage, files: FileList) => {
-  for (const file of Array.from(files)) {
+export const handleFiles = async (
+  db: Firestore,
+  storage: FirebaseStorage,
+  files: FileList,
+  onProgress?: (progress: number) => void
+) => {
+  const fileArray = Array.from(files);
+  const totalFiles = fileArray.length;
+
+  for (let i = 0; i < fileArray.length; i++) {
+    const file = fileArray[i];
     const uploadInfo = await shouldUpload(db, file);
-    if (!uploadInfo) continue;
+    if (!uploadInfo) {
+      // File already exists or doesn't need upload
+      if (onProgress && totalFiles === 1) {
+        onProgress(100);
+      }
+      continue;
+    }
 
     const { fileRef, snap } = uploadInfo;
-    const storageId = await uploadToStorage(storage, file);
+    
+    // For single file, pass progress callback directly
+    // For multiple files, calculate progress based on file index
+    const fileProgressCallback = onProgress && totalFiles === 1
+      ? onProgress
+      : onProgress && totalFiles > 1
+      ? (progress: number) => {
+          const fileProgress = (i / totalFiles) * 100 + (progress / totalFiles);
+          onProgress(Math.min(100, Math.round(fileProgress)));
+        }
+      : undefined;
+
+    const storageId = await uploadToStorage(storage, file, fileProgressCallback);
     await updateFirestore(fileRef, file, storageId, snap);
+  }
+
+  if (onProgress) {
+    onProgress(100);
   }
 };
 
