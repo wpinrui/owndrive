@@ -1,4 +1,4 @@
-import { type FC, useEffect, useState, useCallback, type MouseEvent } from "react";
+import { type FC, useEffect, useState, useCallback, type MouseEvent, useRef } from "react";
 import { collection, onSnapshot, getFirestore } from "firebase/firestore";
 import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
 import {
@@ -24,6 +24,8 @@ const FileList: FC = () => {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const db = app ? getFirestore(app) : null;
+  const containerRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (!db) return;
@@ -34,6 +36,19 @@ const FileList: FC = () => {
     });
     return () => unsubscribe();
   }, [db]);
+
+  // handle deselect on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | globalThis.MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setSelected([]);
+        setLastSelectedIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
 
   const toggleStar = async (items: FileMeta[]) => {
     if (!db) return;
@@ -125,7 +140,7 @@ const FileList: FC = () => {
   };
 
   return (
-    <div className="file-list-container">
+    <div ref={containerRef} className="file-list-container">
       <table className="file-list-table">
         <FileTableHeader sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
         <tbody>
