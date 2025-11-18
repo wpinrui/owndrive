@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, type MouseEvent } from "react";
 import type { FileMeta } from "./fileTypes";
 import "../styling/FileRow.scss";
 import { getFileIcon, formatFileSize } from "./helpers/fileHelpers";
@@ -32,10 +32,16 @@ export const FileRow: FC<Props> = ({
         callback(file);
     };
 
+    const handleDoubleClick = (e: MouseEvent<HTMLTableRowElement>) => {
+        e.stopPropagation();
+        onDownload(file);
+    };
+
     return (
         <tr
             className={`file-row ${selected ? "selected" : ""}`}
             onClick={e => onRowClick(id, e)}
+            onDoubleClick={handleDoubleClick}
         >
             <td className="col-icon">
                 <span className={`material-icons file-thumbnail ${fileIcon.className}`}>
