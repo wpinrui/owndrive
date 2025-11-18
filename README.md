@@ -156,7 +156,17 @@ This installs the Vite frontend, Electron runtime, and builder tooling.
 
 ---
 
-## 6. Using OwnDrive
+## 6. Branding & icons
+
+- The source PNG lives at `resources/owndrive-icon.png`.
+- Regenerate all platform formats with `npm run icons` (the `package` script calls this automatically).
+- Generated assets land in `resources/icons/` and are bundled automatically via Electron Builder’s `extraResources` config.
+- Feel free to swap in your own artwork—just replace `owndrive-icon.png` and rerun `npm run icons`.
+- Database icon created by [Freepik](https://www.freepik.com/) via [Flaticon](https://www.flaticon.com/free-icon/database_138932).
+
+---
+
+## 7. Using OwnDrive
 
 - **Upload files**: Click *Upload* (or drag files onto the window) and they’ll sync to Firebase Storage. Existing names are versioned using timestamps so you never overwrite accidental older copies.
 - **Star important files**: Use the star icon per row or enable “Starred first” toggle for sorting.
@@ -166,7 +176,7 @@ This installs the Vite frontend, Electron runtime, and builder tooling.
 
 ---
 
-## 7. Updating Firebase or environment
+## 8. Updating Firebase or environment
 
 - Add new keys to `.env.example` + `.env` (and re-run the setup script) when you expand the app.
 - If you rotate your Firebase API key, regenerate it in the console and re-run the env script.

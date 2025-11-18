@@ -3,13 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "OwnDrive desktop client powered by Vite + Electron",
+  "author": "OwnDrive Community",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "vite",
     "dev:web": "vite --open",
     "dev:electron": "vite",
+    "icons": "electron-icon-builder --input=resources/owndrive-icon.png --output=resources/icons",
     "build": "tsc -b && vite build",
-    "package": "npm run build && electron-builder",
+    "package": "npm run icons && npm run build && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -29,6 +32,7 @@
     "@vitejs/plugin-react": "^5.1.0",
     "electron": "^32.2.7",
     "electron-builder": "^25.1.8",
+    "electron-icon-builder": "^2.0.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -53,6 +57,12 @@
       "dist",
       "dist-electron"
     ],
+    "extraResources": [
+      {
+        "from": "resources/icons",
+        "to": "icons"
+      }
+    ],
     "directories": {
       "output": "release"
     },
@@ -60,6 +70,7 @@
       "main": "dist-electron/main/main.js"
     },
     "mac": {
+      "icon": "resources/icons/mac/icon.icns",
       "target": [
         "dmg",
         "zip"
@@ -67,12 +78,14 @@
       "category": "public.app-category.productivity"
     },
     "win": {
+      "icon": "resources/icons/win/icon.ico",
       "target": [
         "nsis",
         "zip"
       ]
     },
     "linux": {
+      "icon": "resources/icons/png",
       "target": [
         "AppImage",
         "tar.gz"

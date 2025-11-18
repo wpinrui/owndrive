@@ -7,6 +7,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const preloadPath = path.join(__dirname, '../preload/main.mjs')
 const rendererPath = path.join(__dirname, '../../dist')
 
+const resolveIconPath = () => {
+  if (process.env.VITE_DEV_SERVER_URL) {
+    return path.join(process.cwd(), 'resources', 'icons', 'png', '256x256.png')
+  }
+
+  if (process.platform === 'win32') {
+    return path.join(process.resourcesPath, 'icons', 'win', 'icon.ico')
+  }
+
+  if (process.platform === 'darwin') {
+    return path.join(process.resourcesPath, 'icons', 'mac', 'icon.icns')
+  }
+
+  return path.join(process.resourcesPath, 'icons', 'png', '256x256.png')
+}
+
 if (!app.requestSingleInstanceLock()) {
   app.quit()
   process.exit(0)
@@ -23,6 +39,7 @@ const createMainWindow = () => {
     show: false,
     title: 'OwnDrive',
     autoHideMenuBar: true,
+    icon: resolveIconPath(),
     webPreferences: {
       preload: preloadPath,
       sandbox: false,
