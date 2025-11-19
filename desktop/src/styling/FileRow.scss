@@ -1,0 +1,176 @@
+.file-row {
+    &.selected {
+        background-color: #f1f1f1;
+    }
+
+    td {
+        padding: 8px 12px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .col-icon {
+        width: 40px;
+        text-align: center;
+
+        .file-thumbnail {
+            font-size: 1.8rem;
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            border-radius: 4px;
+
+            &.icon-pdf {
+                color: #e53935;
+            }
+
+            &.icon-doc {
+                color: #1e88e5;
+            }
+
+            &.icon-xls {
+                color: #43a047;
+            }
+
+            &.icon-ppt {
+                color: #fb8c00;
+            }
+
+            &.icon-txt {
+                color: #757575;
+            }
+
+            &.icon-md {
+                color: #546e7a;
+            }
+
+            &.icon-csv {
+                color: #8e24aa;
+            }
+
+            &.icon-img {
+                color: #f4511e;
+            }
+
+            &.icon-audio {
+                color: #3949ab;
+            }
+
+            &.icon-video {
+                color: #fdd835;
+            }
+
+            &.icon-archive {
+                color: #6d4c41;
+            }
+
+            &.icon-code {
+                color: #00acc1;
+            }
+
+            &.icon-key {
+                color: #e53935;
+            }
+
+            &.icon-default {
+                color: #9e9e9e;
+            }
+        }
+    }
+
+    .col-name {
+        width: 25%;
+        font-weight: 500;
+        padding-left: 8px;
+        text-align: left;
+    }
+
+    .col-type {
+        width: 10%;
+        text-align: center;
+    }
+
+    .col-size {
+        width: 10%;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .col-modified {
+        width: 20%;
+        text-align: left;
+    }
+
+    .col-starred {
+        width: 5%;
+        text-align: center;
+    }
+
+    .col-actions {
+        width: 15%;
+        text-align: center;
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+
+            .action-btn {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 4px;
+                border-radius: 4px;
+                transition: background 0.2s;
+
+                &:hover {
+                    background-color: #e0e0e0;
+                }
+
+                &.download-btn {
+                    color: #1e88e5;
+                }
+
+                &.delete-btn {
+                    color: #e53935;
+                }
+
+                &.star-btn {
+                    color: #fdd835;
+                }
+            }
+        }
+    }
+}
+
+/* Table header alignment */
+th {
+    padding: 8px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    &.col-name {
+        text-align: left;
+    }
+
+    &.col-type {
+        text-align: center !important;
+    }
+
+    &.col-size {
+        text-align: right !important;
+        font-variant-numeric: tabular-nums;
+    }
+
+    &.col-modified {
+        text-align: left;
+    }
+
+    &.col-starred,
+    &.col-actions {
+        text-align: center;
+    }
+}

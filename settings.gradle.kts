@@ -20,4 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "OwnDrive"
-include(":app")
+include(":android")
