@@ -5,6 +5,7 @@ import { StarredFirstToggle } from "./components/StarredFirstToggle";
 import { DropZoneOverlay } from "./components/DropZoneOverlay";
 import { ToastContainer } from "./components/ToastContainer";
 import { SettingsButton } from "./components/SettingsButton";
+import { FirstLaunchSettingsModal } from "./components/FirstLaunchSettingsModal";
 import { useFirebaseStorage } from "./hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
@@ -17,6 +18,7 @@ const App: FC = () => {
     const initialStarredFirst = localStorage.getItem(STARRED_FIRST_STORAGE) === "true";
     const [showStarredFirst, setShowStarredFirst] = useState<boolean>(initialStarredFirst);
     const [shouldOpenSettings, setShouldOpenSettings] = useState(false);
+    const [showFirstLaunch, setShowFirstLaunch] = useState(false);
     const [hasCheckedConfig, setHasCheckedConfig] = useState(false);
     const { storage, app } = useFirebaseStorage();
     const { settings, isLoading } = useSettings();
@@ -40,11 +42,23 @@ const App: FC = () => {
         
         // Check if any required field is missing or empty
         if (!apiKey || !projectId || !storageBucket) {
-            setShouldOpenSettings(true);
+            setShowFirstLaunch(true);
         }
         
         setHasCheckedConfig(true);
     }, [settings.firebaseConfig, isLoading, hasCheckedConfig]);
+
+    // Hide first launch modal when config is complete
+    useEffect(() => {
+        const config = settings.firebaseConfig;
+        const apiKey = config?.apiKey?.trim() || "";
+        const projectId = config?.projectId?.trim() || "";
+        const storageBucket = config?.storageBucket?.trim() || "";
+        
+        if (apiKey && projectId && storageBucket && showFirstLaunch) {
+            setShowFirstLaunch(false);
+        }
+    }, [settings.firebaseConfig, showFirstLaunch]);
 
     useEffect(() => {
         localStorage.setItem(STARRED_FIRST_STORAGE, String(showStarredFirst));
@@ -59,21 +73,24 @@ const App: FC = () => {
             <ToastContainer />
             {CollisionDialogComponent}
             {FileSizeDialogComponent}
-            <div className="app-container" {...dragHandlers}>
-                <DropZoneOverlay isVisible={isDragging} />
-                <div className="d-flex-tight">
-                <FileUploader />
-                <StarredFirstToggle 
-                    showStarredFirst={showStarredFirst}
-                    toggleStarredFirst={toggleStarredFirst}
-                />
-                <SettingsButton 
-                    initialOpen={shouldOpenSettings}
-                    onOpenChange={setShouldOpenSettings}
-                />
+            <FirstLaunchSettingsModal isOpen={showFirstLaunch} />
+            {!showFirstLaunch && (
+                <div className="app-container" {...dragHandlers}>
+                    <DropZoneOverlay isVisible={isDragging} />
+                    <div className="d-flex-tight">
+                    <FileUploader />
+                    <StarredFirstToggle 
+                        showStarredFirst={showStarredFirst}
+                        toggleStarredFirst={toggleStarredFirst}
+                    />
+                    <SettingsButton 
+                        initialOpen={shouldOpenSettings}
+                        onOpenChange={setShouldOpenSettings}
+                    />
+                    </div>
+                    <FileList showStarredFirst={showStarredFirst} />
                 </div>
-                <FileList showStarredFirst={showStarredFirst} />
-            </div>
+            )}
         </>
     );
 }
