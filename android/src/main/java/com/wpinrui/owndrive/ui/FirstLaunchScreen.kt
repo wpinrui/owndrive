@@ -79,23 +79,21 @@ fun FirstLaunchScreen(
             if (text.isBlank()) {
                 pasteError = "Clipboard is empty"
                 pasteSuccess = false
-                return@let
+            } else {
+                val (parsedApiKey, parsedProjectId, parsedStorageBucket) = parseFirebaseConfig(text)
+                
+                if (parsedApiKey == null && parsedProjectId == null && parsedStorageBucket == null) {
+                    pasteError = "Could not parse Firebase config from clipboard"
+                    pasteSuccess = false
+                } else {
+                    if (parsedApiKey != null) apiKey = parsedApiKey
+                    if (parsedProjectId != null) projectId = parsedProjectId
+                    if (parsedStorageBucket != null) storageBucket = parsedStorageBucket
+
+                    pasteSuccess = true
+                    pasteError = null
+                }
             }
-
-            val (parsedApiKey, parsedProjectId, parsedStorageBucket) = parseFirebaseConfig(text)
-            
-            if (parsedApiKey == null && parsedProjectId == null && parsedStorageBucket == null) {
-                pasteError = "Could not parse Firebase config from clipboard"
-                pasteSuccess = false
-                return@let
-            }
-
-            if (parsedApiKey != null) apiKey = parsedApiKey
-            if (parsedProjectId != null) projectId = parsedProjectId
-            if (parsedStorageBucket != null) storageBucket = parsedStorageBucket
-
-            pasteSuccess = true
-            pasteError = null
         } catch (e: Exception) {
             pasteError = "Failed to read from clipboard: ${e.message}"
             pasteSuccess = false
@@ -122,28 +120,27 @@ fun FirstLaunchScreen(
 
         if (trimmedApiKey.isEmpty() || trimmedProjectId.isEmpty() || trimmedStorageBucket.isEmpty()) {
             saveError = "All fields are required"
-            return
-        }
+        } else {
+            isSaving = true
+            saveError = null
 
-        isSaving = true
-        saveError = null
-
-        try {
-            val newSettings = FirebaseSettings(
-                apiKey = trimmedApiKey,
-                projectId = trimmedProjectId,
-                storageBucket = trimmedStorageBucket
-            )
-            
-            SettingsManager.saveFirebaseSettings(context, newSettings)
-            
-            isSaving = false
-            
-            // Notify parent that config was saved
-            onConfigSaved()
-        } catch (e: Exception) {
-            saveError = "Failed to save settings: ${e.message}"
-            isSaving = false
+            try {
+                val newSettings = FirebaseSettings(
+                    apiKey = trimmedApiKey,
+                    projectId = trimmedProjectId,
+                    storageBucket = trimmedStorageBucket
+                )
+                
+                SettingsManager.saveFirebaseSettings(context, newSettings)
+                
+                isSaving = false
+                
+                // Notify parent that config was saved
+                onConfigSaved()
+            } catch (e: Exception) {
+                saveError = "Failed to save settings: ${e.message}"
+                isSaving = false
+            }
         }
     }
 
