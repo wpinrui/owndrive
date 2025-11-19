@@ -1,6 +1,6 @@
 import { type FC, useState, useEffect } from "react";
 import { SettingsModal } from "./SettingsModal";
-import "../styling/SettingsButton.scss";
+import styles from "../styling/SettingsButton.module.scss";
 
 type Props = {
   initialOpen?: boolean;
@@ -27,12 +27,12 @@ export const SettingsButton: FC<Props> = ({ initialOpen = false, onOpenChange })
   return (
     <>
       <button
-        className="settings-button"
+        className={styles.settingsButton}
         onClick={handleOpen}
         title="Settings"
         aria-label="Open settings"
       >
-        <span className="material-icons">settings</span>
+        <span className={`material-icons ${styles.settingsButton__icon}`}>settings</span>
       </button>
       <SettingsModal isOpen={isModalOpen} onClose={handleClose} />
     </>

@@ -1,6 +1,7 @@
 import { type FC, useState } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import { useSettings } from "../../contexts/SettingsContext";
+import styles from "../../styling/SettingsModal.module.scss";
 
 export const ClearAllDataSection: FC = () => {
   const { clearAllData } = useSettings();
@@ -22,39 +23,39 @@ export const ClearAllDataSection: FC = () => {
   };
 
   return (
-    <div className="settings-section settings-section-danger">
+    <div className={`${styles.settingsModal__section} ${styles["settingsModal__section--danger"]}`}>
       <h3>Clear All Data</h3>
-      <p className="settings-description">
+      <p className={styles.settingsModal__description}>
         Permanently delete all local and remote user data, including settings, preferences, and any orphaned data. This action cannot be undone.
       </p>
       {!showClearConfirm ? (
         <button
-          className="settings-button-danger"
+          className={styles["settingsModal__button--danger"]}
           onClick={() => setShowClearConfirm(true)}
         >
           <span className="material-icons">delete_forever</span>
           Clear All Data
         </button>
       ) : (
-        <div className="settings-clear-confirm">
-          <p className="settings-clear-warning">
+        <div className={styles.settingsModal__clearConfirm}>
+          <p className={styles.settingsModal__clearWarning}>
             Are you sure you want to clear all data? This will delete:
           </p>
-          <ul className="settings-clear-list">
+          <ul className={styles.settingsModal__clearList}>
             <li>All localStorage data (including orphaned keys)</li>
             <li>Firebase configuration</li>
             <li>User preferences and settings</li>
             <li>Firestore settings document</li>
           </ul>
-          <div className="settings-clear-actions">
+          <div className={styles.settingsModal__clearActions}>
             <button
-              className="settings-button-secondary"
+              className={styles["settingsModal__button--secondary"]}
               onClick={() => setShowClearConfirm(false)}
             >
               Cancel
             </button>
             <button
-              className="settings-button-danger"
+              className={styles["settingsModal__button--danger"]}
               onClick={handleClearAllData}
             >
               <span className="material-icons">delete_forever</span>

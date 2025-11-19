@@ -1,0 +1,245 @@
+// Shared styles for common UI patterns
+// These are imported globally and can be used across components
+
+// Dialog Overlay (shared pattern)
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.2s ease;
+
+  // Lighter overlay for light theme
+  :root.theme-light & {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Dialog Container (shared pattern)
+.dialog {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+// Dialog Header (shared pattern)
+.dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-primary);
+
+  h2,
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+}
+
+// Dialog Content (shared pattern)
+.dialog__content {
+  padding: var(--spacing-lg);
+}
+
+// Dialog Actions (shared pattern)
+.dialog__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--border-primary);
+  flex-wrap: wrap;
+}
+
+// Button Base (shared pattern)
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-family: inherit;
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Button Variants
+.btn--primary {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+
+  &:hover:not(:disabled) {
+    background-color: var(--accent-blue-hover);
+    border-color: var(--accent-blue-hover);
+  }
+}
+
+.btn--secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+  }
+}
+
+.btn--danger {
+  background-color: var(--accent-red);
+  color: white;
+  border-color: var(--accent-red);
+
+  &:hover:not(:disabled) {
+    background-color: var(--accent-red-hover);
+    border-color: var(--accent-red-hover);
+  }
+}
+
+.btn--icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+// Badge (shared pattern)
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+.badge--starred {
+  background-color: var(--accent-yellow);
+  color: var(--text-primary);
+}
+
+// Info Box (shared pattern)
+.info-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.info-box__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-box__label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.info-box__value {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+// File Name Display (shared pattern)
+.file-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  word-break: break-word;
+}
+
+// Warning Message (shared pattern)
+.warning-message {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// Icon Button (shared pattern)
+.icon-btn {
+  background-color: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+
+  &:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.icon-btn--download:hover {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue-hover);
+}
+
+.icon-btn--delete:hover {
+  background-color: var(--accent-red);
+  border-color: var(--accent-red-hover);
+}
+
+.icon-btn--star:hover {
+  background-color: var(--accent-yellow);
+  border-color: var(--accent-yellow-hover);
+}
+

@@ -1,6 +1,7 @@
 import { type FC } from "react";
 import type { CollisionBehavior, UserSettings } from "../../types/settings";
 import { COLLISION_OPTIONS } from "../../constants/collisionOptions";
+import styles from "../../styling/SettingsModal.module.scss";
 
 type Props = {
   title: string;
@@ -27,12 +28,12 @@ export const CollisionBehaviorSection: FC<Props> = ({
   };
 
   return (
-    <div className="settings-section">
+    <div className={styles.settingsModal__section}>
       <h3>{title}</h3>
-      <p className="settings-description">{description}</p>
-      <div className="settings-options">
+      <p className={styles.settingsModal__description}>{description}</p>
+      <div className={styles.settingsModal__options}>
         {COLLISION_OPTIONS.map((option) => (
-          <label key={option.value} className="settings-option">
+          <label key={option.value} className={styles.settingsModal__option}>
             <input
               type="radio"
               name={name}
@@ -40,9 +41,9 @@ export const CollisionBehaviorSection: FC<Props> = ({
               checked={value === option.value}
               onChange={(e) => handleChange(e.target.value as CollisionBehavior)}
             />
-            <div className="settings-option-content">
-              <div className="settings-option-label">{option.label}</div>
-              <div className="settings-option-description">{option.description}</div>
+            <div className={styles.settingsModal__optionContent}>
+              <div className={styles.settingsModal__optionLabel}>{option.label}</div>
+              <div className={styles.settingsModal__optionDescription}>{option.description}</div>
             </div>
           </label>
         ))}

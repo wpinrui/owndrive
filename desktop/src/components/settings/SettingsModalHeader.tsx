@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import styles from "../../styling/SettingsModal.module.scss";
 
 type Props = {
   onClose: () => void;
@@ -6,9 +7,9 @@ type Props = {
 
 export const SettingsModalHeader: FC<Props> = ({ onClose }) => {
   return (
-    <div className="settings-modal-header">
+    <div className={styles.settingsModal__header}>
       <h2>Settings</h2>
-      <button className="settings-modal-close" onClick={onClose}>
+      <button className={styles.settingsModal__close} onClick={onClose}>
         <span className="material-icons">close</span>
       </button>
     </div>

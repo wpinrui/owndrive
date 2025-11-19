@@ -5,7 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useCollisionResolver } from "../hooks/useCollisionResolver";
 import { formatFileSize, checkFileSizesAndConfirm } from "./helpers/fileHelpers";
-import "../styling/FileUploader.scss";
+import styles from "../styling/FileUploader.module.scss";
 import { handleFiles } from "./helpers/fileHelpers";
 import { DEFAULT_SETTINGS } from "../types/settings";
 import { useFileSizeConfirmation } from "../hooks/useFileSizeConfirmation";
@@ -140,17 +140,17 @@ const FileUploader: FC = () => {
     <>
       {CollisionDialogComponent}
       {FileSizeDialogComponent}
-      <div className="FileUploader">
+      <div className={styles.fileUploader}>
         <button
           type="button"
-          className="FileUploader__button"
+          className={styles.fileUploader__button}
           onClick={() => inputRef.current?.click()}
           disabled={loading}
         >
           {loading ? (
-            <span className="FileUploader__spinner"></span>
+            <span className={styles.fileUploader__spinner}></span>
           ) : (
-            <span className="material-icons FileUploader__icon">upload</span>
+            <span className={`material-icons ${styles.fileUploader__icon}`}>upload</span>
           )}
           {loading ? "Uploading..." : "Upload"}
         </button>
@@ -159,7 +159,7 @@ const FileUploader: FC = () => {
           type="file"
           multiple
           ref={inputRef}
-          className="FileUploader__input"
+          className={styles.fileUploader__input}
           onChange={e => e.target.files && onFilesSelected(e.target.files)}
         />
       </div>

@@ -1,3 +1,7 @@
+/* Import shared styles */
+@import './styling/_animations.scss';
+@import './styling/_shared.scss';
+
 /* CSS Reset and Base Styles */
 *,
 *::before,

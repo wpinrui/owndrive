@@ -8,7 +8,7 @@ import { FirebaseConfigSection } from "./settings/FirebaseConfigSection";
 import { CollisionBehaviorSection } from "./settings/CollisionBehaviorSection";
 import { FileSizeWarningSection } from "./settings/FileSizeWarningSection";
 import { ClearAllDataSection } from "./settings/ClearAllDataSection";
-import "../styling/SettingsModal.scss";
+import styles from "../styling/SettingsModal.module.scss";
 
 type Props = {
   isOpen: boolean;
@@ -27,11 +27,11 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="settings-modal-overlay" onClick={onClose}>
-      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="dialog-overlay" onClick={onClose}>
+      <div className={`dialog ${styles.settingsModal}`} onClick={(e) => e.stopPropagation()}>
         <SettingsModalHeader onClose={onClose} />
 
-        <div className="settings-modal-content">
+        <div className={styles.settingsModal__content}>
           <AppearanceSection
             localSettings={localSettings}
             onSettingsChange={setLocalSettings}

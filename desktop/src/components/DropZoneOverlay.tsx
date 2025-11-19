@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import styles from "../styling/DropZoneOverlay.module.scss";
 
 type Props = {
     isVisible: boolean;
@@ -8,10 +9,10 @@ export const DropZoneOverlay: FC<Props> = ({ isVisible }) => {
     if (!isVisible) return null;
 
     return (
-        <div className="drop-zone-overlay">
-            <div className="drop-zone-content">
-                <span className="material-icons drop-zone-icon">cloud_upload</span>
-                <p className="drop-zone-text">Drop files here to upload</p>
+        <div className={styles.dropZoneOverlay}>
+            <div className={styles.dropZoneOverlay__content}>
+                <span className={`material-icons ${styles.dropZoneOverlay__icon}`}>cloud_upload</span>
+                <p className={styles.dropZoneOverlay__text}>Drop files here to upload</p>
             </div>
         </div>
     );

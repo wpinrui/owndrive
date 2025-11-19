@@ -1,0 +1,215 @@
+// FileRow component styles using BEM convention
+
+.fileRow {
+  background-color: var(--bg-primary);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-primary);
+
+  &:hover {
+    background-color: var(--bg-hover);
+  }
+
+  &--selected {
+    background-color: var(--bg-selected);
+
+    &:hover {
+      background-color: var(--bg-selected-hover);
+    }
+  }
+}
+
+.fileRow__cell {
+  padding: 10px 16px;
+  vertical-align: middle;
+}
+
+.fileRow__cell--icon {
+  padding-left: 20px;
+}
+
+.fileRow__cell--name {
+  .fileRow__fileName {
+    font-weight: 500;
+    color: var(--text-primary);
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.fileRow__cell--type {
+  color: var(--text-secondary);
+}
+
+.fileRow__cell--size {
+  color: var(--text-secondary);
+}
+
+.fileRow__cell--modified {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.fileRow__cell--starred {
+  text-align: center;
+
+  .fileRow__starIcon {
+    font-size: 16px;
+  }
+}
+
+.fileRow__cell--actions {
+  text-align: right;
+  padding-right: 20px;
+}
+
+.fileRow__thumbnail {
+  font-size: 1.8rem;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.fileRow__thumbnail--pdf {
+  color: #e53935;
+}
+
+.fileRow__thumbnail--doc {
+  color: #1e88e5;
+}
+
+.fileRow__thumbnail--xls {
+  color: #43a047;
+}
+
+.fileRow__thumbnail--ppt {
+  color: #fb8c00;
+}
+
+.fileRow__thumbnail--txt {
+  color: #757575;
+}
+
+.fileRow__thumbnail--md {
+  color: #546e7a;
+}
+
+.fileRow__thumbnail--csv {
+  color: #8e24aa;
+}
+
+.fileRow__thumbnail--img {
+  color: #f4511e;
+}
+
+.fileRow__thumbnail--audio {
+  color: #3949ab;
+}
+
+.fileRow__thumbnail--video {
+  color: #fdd835;
+}
+
+.fileRow__thumbnail--archive {
+  color: #6d4c41;
+}
+
+.fileRow__thumbnail--code {
+  color: #00acc1;
+}
+
+.fileRow__thumbnail--key {
+  color: #e53935;
+}
+
+.fileRow__thumbnail--default {
+  color: #9e9e9e;
+}
+
+.fileRow__actionButtons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.fileRow__actionButton {
+  background-color: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+
+  &:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.fileRow__actionButton--download:hover {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue-hover);
+}
+
+.fileRow__actionButton--delete:hover {
+  background-color: var(--accent-red);
+  border-color: var(--accent-red-hover);
+}
+
+.fileRow__actionButton--star {
+  font-size: 16px;
+
+  &:hover {
+    background-color: var(--accent-yellow);
+    border-color: var(--accent-yellow-hover);
+  }
+}
+
+@media (max-width: 1024px) {
+  .fileRow__cell {
+    padding: 8px 12px;
+
+    &.fileRow__cell--icon {
+      padding-left: 16px;
+
+      .fileRow__thumbnail {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    &.fileRow__cell--actions {
+      padding-right: 16px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .fileRow__cell {
+    &.fileRow__cell--size,
+    &.fileRow__cell--modified {
+      display: none;
+    }
+
+    &.fileRow__cell--name {
+      width: auto;
+    }
+  }
+}
+

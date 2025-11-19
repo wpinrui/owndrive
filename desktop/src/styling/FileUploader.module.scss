@@ -1,0 +1,62 @@
+// FileUploader component styles using BEM convention
+
+.fileUploader {
+  // Block container
+}
+
+.fileUploader__input {
+  display: none;
+}
+
+.fileUploader__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.fileUploader__icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+
+.fileUploader__spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--text-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.fileUploader__toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #d32f2f;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  animation: fadein 0.3s, fadeout 0.3s 2.7s;
+}
+

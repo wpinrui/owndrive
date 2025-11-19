@@ -1,0 +1,25 @@
+// EmptyState component styles using BEM convention
+
+.emptyState {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 60px 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.emptyState__content {
+  color: var(--text-secondary);
+}
+
+.emptyState__icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyState__message {
+  font-size: 16px;
+  margin: 0;
+}
+

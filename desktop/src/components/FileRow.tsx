@@ -1,6 +1,6 @@
 import { type FC, type MouseEvent } from "react";
 import type { FileMeta } from "./fileTypes";
-import "../styling/FileRow.scss";
+import styles from "../styling/FileRow.module.scss";
 import { getFileIcon, formatFileSize } from "./helpers/fileHelpers";
 
 type Props = {
@@ -37,26 +37,34 @@ export const FileRow: FC<Props> = ({
         onDownload(file);
     };
 
+    // Map icon class names from "icon-pdf" to "fileRow__thumbnail--pdf"
+    const iconModifier = fileIcon.className.replace('icon-', '');
+    const thumbnailClass = `${styles.fileRow__thumbnail} ${styles[`fileRow__thumbnail--${iconModifier}`] || styles["fileRow__thumbnail--default"]}`;
+
     return (
         <tr
-            className={`file-row ${selected ? "selected" : ""}`}
+            className={`${styles.fileRow} ${selected ? styles["fileRow--selected"] : ""}`}
             onClick={e => onRowClick(id, e)}
             onDoubleClick={handleDoubleClick}
         >
-            <td className="col-icon">
-                <span className={`material-icons file-thumbnail ${fileIcon.className}`}>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--icon"]}`}>
+                <span className={`material-icons ${thumbnailClass}`}>
                     {fileIcon.icon}
                 </span>
             </td>
-            <td className="col-name">{name}</td>
-            <td className="col-type">{fileType}</td>
-            <td className="col-size">{formattedSize}</td>
-            <td className="col-modified">{lastModifiedDisplay}</td>
-            <td className="col-starred">{starred && <span className="star-icon">⭐</span>}</td>
-            <td className="col-actions">
-                <div className="action-buttons">
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--name"]}`}>
+                <span className={styles.fileRow__fileName}>{name}</span>
+            </td>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--type"]}`}>{fileType}</td>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--size"]}`}>{formattedSize}</td>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--modified"]}`}>{lastModifiedDisplay}</td>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--starred"]}`}>
+                {starred && <span className={styles.fileRow__starIcon}>⭐</span>}
+            </td>
+            <td className={`${styles.fileRow__cell} ${styles["fileRow__cell--actions"]}`}>
+                <div className={styles.fileRow__actionButtons}>
                     <button
-                        className="action-btn download-btn"
+                        className={`${styles.fileRow__actionButton} ${styles["fileRow__actionButton--download"]}`}
                         onClick={stopProp(onDownload)}
                         title="Download"
                     >
@@ -64,7 +72,7 @@ export const FileRow: FC<Props> = ({
                     </button>
                     {!starred && (
                         <button
-                            className="action-btn delete-btn"
+                            className={`${styles.fileRow__actionButton} ${styles["fileRow__actionButton--delete"]}`}
                             onClick={stopProp(onDelete)}
                             title="Delete"
                         >
@@ -72,7 +80,7 @@ export const FileRow: FC<Props> = ({
                         </button>
                     )}
                     <button
-                        className="action-btn star-btn"
+                        className={`${styles.fileRow__actionButton} ${styles["fileRow__actionButton--star"]}`}
                         onClick={stopProp(onToggleStar)}
                         title={starred ? "Unstar" : "Star"}
                     >

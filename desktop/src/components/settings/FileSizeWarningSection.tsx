@@ -2,6 +2,7 @@ import { type FC } from "react";
 import type { UserSettings } from "../../types/settings";
 import { DEFAULT_SETTINGS } from "../../types/settings";
 import { formatFileSize } from "../helpers/fileHelpers";
+import styles from "../../styling/SettingsModal.module.scss";
 
 type Props = {
   localSettings: UserSettings;
@@ -24,20 +25,20 @@ export const FileSizeWarningSection: FC<Props> = ({ localSettings, onSettingsCha
   const currentLimit = localSettings.fileSizeWarningLimit ?? DEFAULT_SETTINGS.fileSizeWarningLimit!;
 
   return (
-    <div className="settings-section">
+    <div className={styles.settingsModal__section}>
       <h3>File Size Warning</h3>
-      <p className="settings-description">
+      <p className={styles.settingsModal__description}>
         Warn when uploading files larger than this size. This helps you stay within Firebase's free tier limits (5 GB storage). The default is 100 MB (2% of free tier).
       </p>
-      <div className="settings-input-group">
-        <label htmlFor="file-size-warning-limit" className="settings-input-label">
+      <div className={styles.settingsModal__inputGroup}>
+        <label htmlFor="file-size-warning-limit" className={styles.settingsModal__inputLabel}>
           Warning Threshold
         </label>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <input
             id="file-size-warning-limit"
             type="number"
-            className="settings-input"
+            className={styles.settingsModal__input}
             value={mbValue}
             onChange={(e) => {
               const value = parseFloat(e.target.value) || 0;

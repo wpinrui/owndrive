@@ -1,6 +1,7 @@
 import { type FC } from "react";
 import type { Theme, UserSettings } from "../../types/settings";
 import { DEFAULT_SETTINGS } from "../../types/settings";
+import styles from "../../styling/SettingsModal.module.scss";
 
 type Props = {
   localSettings: UserSettings;
@@ -9,18 +10,18 @@ type Props = {
 
 export const AppearanceSection: FC<Props> = ({ localSettings, onSettingsChange }) => {
   return (
-    <div className="settings-section">
+    <div className={styles.settingsModal__section}>
       <h3>Appearance</h3>
-      <p className="settings-description">
+      <p className={styles.settingsModal__description}>
         Choose your preferred theme. Auto follows your system preference.
       </p>
-      <div className="settings-input-group">
-        <label htmlFor="theme-selector" className="settings-input-label">
+      <div className={styles.settingsModal__inputGroup}>
+        <label htmlFor="theme-selector" className={styles.settingsModal__inputLabel}>
           Theme
         </label>
         <select
           id="theme-selector"
-          className="settings-select"
+          className={styles.settingsModal__select}
           value={localSettings.theme || DEFAULT_SETTINGS.theme || "auto"}
           onChange={(e) =>
             onSettingsChange({

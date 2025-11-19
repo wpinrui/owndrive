@@ -4,7 +4,7 @@ import { useFirebaseStorage } from "../hooks/useFirebaseStorage";
 import { FileRow } from "./FileRow";
 import { FileTableHeader } from "./FileTableHeader";
 import { EmptyState } from "./EmptyState";
-import "../styling/FileList.scss";
+import styles from "../styling/FileList.module.scss";
 import { sortFiles } from "./helpers/fileListHelpers";
 import { useSortPreferences } from "../hooks/useSortPreferences";
 import { useFileSelection } from "../hooks/useFileSelection";
@@ -68,14 +68,14 @@ const FileList: FC<FileListProps> = ({ showStarredFirst }) => {
     if (!files.length) return <EmptyState />;
 
     return (
-        <div ref={containerRef} className="file-list-container">
-            <table className="file-list-table">
+        <div ref={containerRef} className={styles.fileList}>
+            <table className={styles.fileList__table}>
                 <FileTableHeader
                     sortKey={sortKey}
                     sortOrder={sortOrder}
                     onSort={handleSort}
                 />
-                <tbody>
+                <tbody className={styles.fileList__tbody}>
                     {displayedFiles.map((file, index) => (
                         <FileRow
                             key={file.id}
