@@ -4,8 +4,10 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -153,7 +155,26 @@ fun FileListScreen(
         }
     }
     
-    // Camera launcher
+    // Create camera image URI - must be defined before it's used
+    fun createCameraImageUri(): Uri? {
+        return try {
+            val imageFile = File(context.cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
+            // Ensure parent directory exists
+            imageFile.parentFile?.mkdirs()
+            // Create empty file
+            imageFile.createNewFile()
+            androidx.core.content.FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                imageFile
+            )
+        } catch (e: Exception) {
+            error = "Failed to create camera file: ${e.message}"
+            null
+        }
+    }
+    
+    // Camera launcher - must be defined before permission launcher uses it
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -164,17 +185,20 @@ fun FileListScreen(
         }
     }
     
-    // Create camera image URI
-    fun createCameraImageUri(): Uri? {
-        val imageFile = File(context.cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
-        return try {
-            androidx.core.content.FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                imageFile
-            )
-        } catch (e: Exception) {
-            null
+    // Camera permission launcher - can now reference createCameraImageUri and cameraLauncher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = createCameraImageUri()
+            if (uri != null) {
+                cameraImageUri = uri
+                cameraLauncher.launch(uri)
+            } else {
+                error = "Failed to create camera file"
+            }
+        } else {
+            error = "Camera permission is required to take photos"
         }
     }
 
@@ -537,12 +561,23 @@ fun FileListScreen(
             // Camera button (small)
             FloatingActionButton(
                 onClick = {
-                    val uri = createCameraImageUri()
-                    if (uri != null) {
-                        cameraImageUri = uri
-                        cameraLauncher.launch(uri)
-                    } else {
-                        error = "Failed to create camera file"
+                    // Check and request camera permission first
+                    when {
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+                            // Permission already granted, proceed with camera
+                            val uri = createCameraImageUri()
+                            if (uri != null) {
+                                cameraImageUri = uri
+                                cameraLauncher.launch(uri)
+                            }
+                        }
+                        else -> {
+                            // Request permission
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
                     }
                 },
                 modifier = Modifier.size(56.dp),
