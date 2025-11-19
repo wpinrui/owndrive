@@ -57,7 +57,6 @@ fun FirstLaunchScreen(
     var apiKey by remember { mutableStateOf("") }
     var projectId by remember { mutableStateOf("") }
     var storageBucket by remember { mutableStateOf("") }
-    var pasteText by remember { mutableStateOf("") }
     var pasteError by remember { mutableStateOf<String?>(null) }
     var pasteSuccess by remember { mutableStateOf(false) }
     var saveError by remember { mutableStateOf<String?>(null) }
@@ -100,18 +99,6 @@ fun FirstLaunchScreen(
         }
     }
 
-    val handleManualPaste = { text: String ->
-        val (parsedApiKey, parsedProjectId, parsedStorageBucket) = parseFirebaseConfig(text)
-        
-        if (parsedApiKey != null) apiKey = parsedApiKey
-        if (parsedProjectId != null) projectId = parsedProjectId
-        if (parsedStorageBucket != null) storageBucket = parsedStorageBucket
-        
-        if (parsedApiKey != null || parsedProjectId != null || parsedStorageBucket != null) {
-            pasteSuccess = true
-            pasteError = null
-        }
-    }
 
     val handleSave = {
         val trimmedApiKey = apiKey.trim()
@@ -195,60 +182,143 @@ fun FirstLaunchScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                // Paste from Clipboard Section
+                // Input Fields Section (Top 2/3)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(2f)
+                ) {
+                    // API Key
+                    OutlinedTextField(
+                        value = apiKey,
+                        onValueChange = { 
+                            apiKey = it
+                            pasteError = null
+                        },
+                        label = { Text("API Key *") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+
+                    // Project ID
+                    OutlinedTextField(
+                        value = projectId,
+                        onValueChange = { 
+                            projectId = it
+                            pasteError = null
+                        },
+                        label = { Text("Project ID *") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+
+                    // Storage Bucket
+                    OutlinedTextField(
+                        value = storageBucket,
+                        onValueChange = { 
+                            storageBucket = it
+                            pasteError = null
+                        },
+                        label = { Text("Storage Bucket *") },
+                        placeholder = { Text("e.g., project-id.appspot.com") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = { handleSave() }
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+                }
+
+                // OR Section (Bottom 1/3)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .weight(1f),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
+                        // OR Divider
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Button(
-                                onClick = handlePasteFromClipboard,
-                                modifier = Modifier.weight(0.4f)
-                            ) {
-                                Text("Paste from Clipboard", style = MaterialTheme.typography.labelSmall)
-                            }
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.outline
+                            )
                             Text(
-                                text = "Or paste config code below",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.weight(0.6f)
+                                text = "OR",
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Paste Button
+                        Button(
+                            onClick = handlePasteFromClipboard,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(
+                                text = "Auto-fill from Clipboard",
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                         
                         Spacer(modifier = Modifier.height(8.dp))
                         
-                        OutlinedTextField(
-                            value = pasteText,
-                            onValueChange = { 
-                                pasteText = it
-                                handleManualPaste(it)
-                            },
-                            placeholder = { Text("Paste your Firebase config code here...") },
-                            modifier = Modifier.fillMaxWidth(),
-                            minLines = 4,
-                            maxLines = 8,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                            )
+                        // Help Text
+                        Text(
+                            text = "Paste your Firebase config code from the console",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                         
+                        // Success/Error Messages
                         if (pasteSuccess) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "✓ Config parsed successfully! Fields have been filled.",
+                                text = "✓ Config parsed!",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -259,72 +329,14 @@ fun FirstLaunchScreen(
                             Text(
                                 text = pasteError!!,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     }
                 }
 
-                // API Key
-                OutlinedTextField(
-                    value = apiKey,
-                    onValueChange = { 
-                        apiKey = it
-                        pasteError = null
-                    },
-                    label = { Text("API Key *") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
-                )
-
-                // Project ID
-                OutlinedTextField(
-                    value = projectId,
-                    onValueChange = { 
-                        projectId = it
-                        pasteError = null
-                    },
-                    label = { Text("Project ID *") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
-                )
-
-                // Storage Bucket
-                OutlinedTextField(
-                    value = storageBucket,
-                    onValueChange = { 
-                        storageBucket = it
-                        pasteError = null
-                    },
-                    label = { Text("Storage Bucket *") },
-                    placeholder = { Text("e.g., project-id.appspot.com") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = { handleSave() }
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Save Button
                 Button(
