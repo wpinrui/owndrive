@@ -1,12 +1,17 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell, clipboard } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const preloadPath = path.join(__dirname, '../preload/main.mjs')
+const preloadPath = path.join(__dirname, '../preload/main.cjs')
 const rendererPath = path.join(__dirname, '../../dist')
+
+// Verify preload script exists
+if (!existsSync(preloadPath)) {
+  console.error(`Preload script not found at: ${preloadPath}`)
+}
 
 const resolveIconPath = () => {
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -61,6 +66,11 @@ const createMainWindow = () => {
       contextIsolation: true,
     },
   })
+  
+  // Log preload errors for debugging
+  mainWindow.webContents.on('preload-error', (_event, preloadPath, error) => {
+    console.error('Preload script error:', preloadPath, error)
+  })
 
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
@@ -90,6 +100,20 @@ app.on('second-instance', () => {
 
 app.whenReady().then(() => {
   ipcMain.handle('ping', () => 'pong')
+  
+  // Clipboard handlers
+  ipcMain.handle('get-clipboard-text', () => {
+    return clipboard.readText()
+  })
+  
+  ipcMain.handle('get-clipboard-image', () => {
+    const image = clipboard.readImage()
+    if (image.isEmpty()) {
+      return null
+    }
+    // Convert to PNG buffer
+    return image.toPNG()
+  })
 
   createMainWindow()
 

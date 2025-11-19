@@ -1,0 +1,89 @@
+// FileNameDialog component styles using BEM convention
+
+.fileNameDialog__label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+}
+
+.fileNameDialog__input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(var(--accent-blue-rgb, 33, 150, 243), 0.2);
+  }
+
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
+}
+
+.fileNameDialog__hint {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: var(--spacing-sm) 0 0 0;
+}
+
+.fileNameDialog__button {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.fileNameDialog__button--cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--border-secondary);
+  }
+}
+
+.fileNameDialog__button--confirm {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+
+  &:hover:not(:disabled) {
+    background-color: var(--accent-blue-hover);
+    border-color: var(--accent-blue-hover);
+  }
+}
+

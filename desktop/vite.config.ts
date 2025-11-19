@@ -37,6 +37,10 @@ const electronEntries = {
         outDir: 'dist-electron/preload',
         rollupOptions: {
           external: ['electron'],
+          output: {
+            format: 'cjs' as const,
+            entryFileNames: 'main.cjs',
+          },
         },
       },
     },

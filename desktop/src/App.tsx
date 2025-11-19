@@ -1,6 +1,7 @@
 import { type FC, useState, useEffect } from "react";
 import FileList from "./components/FileList";
 import FileUploader from "./components/FileUploader";
+import ClipboardUploader from "./components/ClipboardUploader";
 import { StarredFirstToggle } from "./components/StarredFirstToggle";
 import { DropZoneOverlay } from "./components/DropZoneOverlay";
 import { ToastContainer } from "./components/ToastContainer";
@@ -79,6 +80,7 @@ const App: FC = () => {
                     <DropZoneOverlay isVisible={isDragging} />
                     <div className="d-flex-tight">
                     <FileUploader />
+                    <ClipboardUploader />
                     <StarredFirstToggle 
                         showStarredFirst={showStarredFirst}
                         toggleStarredFirst={toggleStarredFirst}
