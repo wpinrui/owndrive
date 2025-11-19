@@ -327,3 +327,149 @@
   justify-content: flex-end;
 }
 
+.settingsModal__fieldsRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.settingsModal__fieldsColumn {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.settingsModal__pasteColumn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.settingsModal__pasteSidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-primary);
+  width: 100%;
+  gap: var(--spacing-md);
+}
+
+.settingsModal__pasteDivider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-primary);
+  }
+  
+  span {
+    padding: 0 var(--spacing-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+  }
+}
+
+.settingsModal__pasteButton {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-family: inherit;
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+  width: 100%;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
+  word-wrap: break-word;
+
+  &:hover {
+    background-color: var(--accent-blue-hover);
+    border-color: var(--accent-blue-hover);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.settingsModal__pasteText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 200px;
+}
+
+.settingsModal__pasteHelp {
+  margin: var(--spacing-sm) 0 0 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.settingsModal__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-family: 'Courier New', Courier, monospace;
+  resize: vertical;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    background-color: var(--bg-tertiary);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+}
+
+.settingsModal__message {
+  margin-top: var(--spacing-sm);
+  font-size: 0.75rem;
+  text-align: center;
+  width: 100%;
+}
+
+.settingsModal__message--success {
+  color: var(--accent-cyan);
+}
+
+.settingsModal__message--error {
+  color: var(--accent-red);
+}
+
+.settingsModal__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  
+  &:hover {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+  }
+}
+

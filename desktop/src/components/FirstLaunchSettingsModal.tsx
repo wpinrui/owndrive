@@ -1,4 +1,4 @@
-import { type FC, useState, useRef, useEffect } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import type { FirebaseConfig } from "../types/settings";
 import styles from "../styling/SettingsModal.module.scss";
@@ -56,7 +56,6 @@ export const FirstLaunchSettingsModal: FC<Props> = ({ isOpen }) => {
   const [storageBucket, setStorageBucket] = useState(settings.firebaseConfig?.storageBucket || "");
   const [pasteError, setPasteError] = useState<string | null>(null);
   const [pasteSuccess, setPasteSuccess] = useState(false);
-  const pasteTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -96,19 +95,6 @@ export const FirstLaunchSettingsModal: FC<Props> = ({ isOpen }) => {
     }
   };
 
-  const handleManualPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const text = e.clipboardData.getData("text");
-    const parsed = parseFirebaseConfig(text);
-    
-    if (parsed) {
-      if (parsed.apiKey) setApiKey(parsed.apiKey);
-      if (parsed.projectId) setProjectId(parsed.projectId);
-      if (parsed.storageBucket) setStorageBucket(parsed.storageBucket);
-      setPasteSuccess(true);
-      setPasteError(null);
-      setTimeout(() => setPasteSuccess(false), 3000);
-    }
-  };
 
   const handleSave = () => {
     const trimmedApiKey = apiKey.trim();
@@ -152,10 +138,12 @@ export const FirstLaunchSettingsModal: FC<Props> = ({ isOpen }) => {
         style={{ maxWidth: "600px" }}
       >
         <div className={styles.settingsModal__header}>
-          <h2>Welcome to OwnDrive</h2>
-          <p style={{ marginTop: "8px", fontSize: "14px", color: "var(--text-secondary)" }}>
-            Please configure your Firebase credentials to get started
-          </p>
+          <div>
+            <h2>Welcome to OwnDrive</h2>
+            <p className={styles.settingsModal__description} style={{ marginTop: "8px" }}>
+              Please configure your Firebase credentials to get started
+            </p>
+          </div>
         </div>
 
         <div className={styles.settingsModal__content}>
@@ -165,117 +153,100 @@ export const FirstLaunchSettingsModal: FC<Props> = ({ isOpen }) => {
               Configure your Firebase project credentials. These are stored locally and required to connect to your Firebase Storage and Firestore.
             </p>
 
-            {/* Paste from Clipboard Section */}
-            <div style={{ marginBottom: "24px", padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                <button
-                  onClick={handlePaste}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "var(--primary)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                  }}
-                >
-                  Paste from Clipboard
-                </button>
-                <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
-                  Or paste Firebase config code below
-                </span>
+            <div className={styles.settingsModal__fieldsRow}>
+              {/* Left side: Input fields (2/3) */}
+              <div className={styles.settingsModal__fieldsColumn}>
+                <div className={styles.settingsModal__inputGroup}>
+                  <label htmlFor="firebase-api-key" className={styles.settingsModal__inputLabel}>
+                    API Key *
+                  </label>
+                  <input
+                    id="firebase-api-key"
+                    type="text"
+                    className={styles.settingsModal__input}
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value);
+                      setPasteError(null);
+                    }}
+                    placeholder="Enter your Firebase API Key"
+                    required
+                  />
+                </div>
+                <div className={styles.settingsModal__inputGroup}>
+                  <label htmlFor="firebase-project-id" className={styles.settingsModal__inputLabel}>
+                    Project ID *
+                  </label>
+                  <input
+                    id="firebase-project-id"
+                    type="text"
+                    className={styles.settingsModal__input}
+                    value={projectId}
+                    onChange={(e) => {
+                      setProjectId(e.target.value);
+                      setPasteError(null);
+                    }}
+                    placeholder="Enter your Firebase Project ID"
+                    required
+                  />
+                </div>
+                <div className={styles.settingsModal__inputGroup}>
+                  <label htmlFor="firebase-storage-bucket" className={styles.settingsModal__inputLabel}>
+                    Storage Bucket *
+                  </label>
+                  <input
+                    id="firebase-storage-bucket"
+                    type="text"
+                    className={styles.settingsModal__input}
+                    value={storageBucket}
+                    onChange={(e) => {
+                      setStorageBucket(e.target.value);
+                      setPasteError(null);
+                    }}
+                    placeholder="Enter your Firebase Storage Bucket (e.g., project-id.appspot.com)"
+                    required
+                  />
+                </div>
               </div>
-              <textarea
-                ref={pasteTextareaRef}
-                onPaste={handleManualPaste}
-                placeholder="Paste your Firebase config code here (e.g., from Firebase Console)..."
-                style={{
-                  width: "100%",
-                  minHeight: "100px",
-                  padding: "12px",
-                  border: "1px solid var(--border)",
-                  borderRadius: "4px",
-                  fontFamily: "monospace",
-                  fontSize: "12px",
-                  resize: "vertical",
-                }}
-              />
-              {pasteSuccess && (
-                <p style={{ marginTop: "8px", color: "var(--success)", fontSize: "14px" }}>
-                  ✓ Config parsed successfully! Fields have been filled.
-                </p>
-              )}
-              {pasteError && (
-                <p style={{ marginTop: "8px", color: "var(--error)", fontSize: "14px" }}>
-                  {pasteError}
-                </p>
-              )}
-            </div>
 
-            <div className={styles.settingsModal__inputGroup}>
-              <label htmlFor="firebase-api-key" className={styles.settingsModal__inputLabel}>
-                API Key *
-              </label>
-              <input
-                id="firebase-api-key"
-                type="text"
-                className={styles.settingsModal__input}
-                value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
-                  setPasteError(null);
-                }}
-                placeholder="Enter your Firebase API Key"
-                required
-              />
-            </div>
-            <div className={styles.settingsModal__inputGroup}>
-              <label htmlFor="firebase-project-id" className={styles.settingsModal__inputLabel}>
-                Project ID *
-              </label>
-              <input
-                id="firebase-project-id"
-                type="text"
-                className={styles.settingsModal__input}
-                value={projectId}
-                onChange={(e) => {
-                  setProjectId(e.target.value);
-                  setPasteError(null);
-                }}
-                placeholder="Enter your Firebase Project ID"
-                required
-              />
-            </div>
-            <div className={styles.settingsModal__inputGroup}>
-              <label htmlFor="firebase-storage-bucket" className={styles.settingsModal__inputLabel}>
-                Storage Bucket *
-              </label>
-              <input
-                id="firebase-storage-bucket"
-                type="text"
-                className={styles.settingsModal__input}
-                value={storageBucket}
-                onChange={(e) => {
-                  setStorageBucket(e.target.value);
-                  setPasteError(null);
-                }}
-                placeholder="Enter your Firebase Storage Bucket (e.g., project-id.appspot.com)"
-                required
-              />
+              {/* Bottom section: Paste option (1/3) */}
+              <div className={styles.settingsModal__pasteColumn}>
+                <div className={styles.settingsModal__pasteSidebar}>
+                  <div className={styles.settingsModal__pasteDivider}>
+                    <span>OR</span>
+                  </div>
+                  <div style={{ width: "100%", textAlign: "center" }}>
+                    <button
+                      onClick={handlePaste}
+                      className={styles.settingsModal__pasteButton}
+                    >
+                      Auto-fill from Clipboard
+                    </button>
+                    <p className={styles.settingsModal__pasteHelp}>
+                      Paste your Firebase config code from the console
+                    </p>
+                  </div>
+                  {pasteSuccess && (
+                    <p className={`${styles.settingsModal__message} ${styles["settingsModal__message--success"]}`}>
+                      ✓ Config parsed!
+                    </p>
+                  )}
+                  {pasteError && (
+                    <p className={`${styles.settingsModal__message} ${styles["settingsModal__message--error"]}`}>
+                      {pasteError}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div className={styles.settingsModal__footer}>
           <button
-            className={styles["settingsModal__button--primary"]}
+            className={`${styles.settingsModal__button} ${styles["settingsModal__button--primary"]}`}
             onClick={handleSave}
             disabled={!canSave}
-            style={{
-              opacity: canSave ? 1 : 0.5,
-              cursor: canSave ? "pointer" : "not-allowed",
-            }}
           >
             Save & Continue
           </button>
