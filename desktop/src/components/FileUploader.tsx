@@ -52,20 +52,11 @@ const FileUploader: FC = () => {
       filesToUpload.forEach(file => dataTransfer.items.add(file));
       const filteredFileList = dataTransfer.files;
       
-      // Show toast for each file being uploaded
-      const toastIds = filesToUpload.map((file) => {
-        const fileSize = formatFileSize(file.size);
-        return showToast(
-          `Uploading ${file.name} (${fileSize})...`,
-          "loading",
-          { duration: 0 }
-        );
-      });
-
       let combinedToastId: string | undefined;
+      let toastId: string | undefined;
 
       try {
-        // For multiple files, show combined progress
+        // For multiple files, show combined progress only
         if (filesToUpload.length > 1) {
           combinedToastId = showToast(
             `Uploading ${filesToUpload.length} files...`,
@@ -85,31 +76,27 @@ const FileUploader: FC = () => {
             (message, type, options) => showToast(message, type, options)
           );
 
-          // Update individual toasts
-          toastIds.forEach((id) => {
-            updateToast(id, {
-              type: "success",
-              message: "Upload complete",
-              duration: 4000,
-            });
-          });
-
           updateToast(combinedToastId, {
             type: "success",
             message: `Successfully uploaded ${filesToUpload.length} files`,
             duration: 4000,
           });
         } else {
-          // Single file upload
+          // Single file upload - show individual toast
           const file = filesToUpload[0];
-          const toastId = toastIds[0];
+          const fileSize = formatFileSize(file.size);
+          toastId = showToast(
+            `Uploading ${file.name} (${fileSize})...`,
+            "loading",
+            { duration: 0 }
+          );
 
           await handleFiles(
             db!,
             storage!,
             filteredFileList,
             (progress) => {
-              updateToast(toastId, { progress });
+              updateToast(toastId!, { progress });
             },
             settings,
             resolveCollision,
@@ -126,20 +113,17 @@ const FileUploader: FC = () => {
         console.error(err);
         const errorMessage = err.message || "Something went wrong";
         
-        // Update all toasts to show error
-        toastIds.forEach((id) => {
-          updateToast(id, {
-            type: "error",
-            message: errorMessage,
-            duration: 4000,
-          });
-        });
-
-        // Update combined toast if it exists
+        // Update toast to show error
         if (combinedToastId) {
           updateToast(combinedToastId, {
             type: "error",
             message: `Failed to upload files: ${errorMessage}`,
+            duration: 4000,
+          });
+        } else if (toastId) {
+          updateToast(toastId, {
+            type: "error",
+            message: errorMessage,
             duration: 4000,
           });
         }
