@@ -287,7 +287,7 @@ export const handleFiles = async (
       };
     }
 
-    const { fileRef, existingFile, finalFileName } = collisionResult!;
+    const { existingFile, finalFileName } = collisionResult!;
     
     // For single file, pass progress callback directly
     // For multiple files, calculate progress based on file index

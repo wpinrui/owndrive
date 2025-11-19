@@ -56,7 +56,7 @@ const saveFirebaseConfig = (config: FirebaseConfig | undefined) => {
 
 export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
   // Load Firebase config from localStorage on init
-  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | undefined>(() => loadFirebaseConfig());
+  const [, setFirebaseConfig] = useState<FirebaseConfig | undefined>(() => loadFirebaseConfig());
   const [settings, setSettings] = useState<UserSettings>(() => ({
     ...DEFAULT_SETTINGS,
     fileSizeWarningLimit: DEFAULT_SETTINGS.fileSizeWarningLimit,
