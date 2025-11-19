@@ -46,6 +46,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.wpinrui.owndrive.FileActions
 import com.wpinrui.owndrive.FileMeta
+import com.wpinrui.owndrive.NotificationManager
+import com.wpinrui.owndrive.NotificationType
 import com.wpinrui.owndrive.SettingsManager
 import com.wpinrui.owndrive.SortKey
 import com.wpinrui.owndrive.SortOrder
@@ -58,6 +60,7 @@ import java.util.*
 @Composable
 fun FileListScreen(
     onSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -140,14 +143,50 @@ fun FileListScreen(
     ) { uri: Uri? ->
         uri?.let {
             scope.launch {
+                var notificationId: String? = null
                 try {
                     isUploading = true
                     val fileName = getFileNameFromUri(context, it) ?: "file_${System.currentTimeMillis()}"
                     val db = FirebaseFirestore.getInstance()
                     val storage = FirebaseStorage.getInstance()
-                    FileActions.uploadFile(context, db, storage, it, fileName)
+                    
+                    // Show notification
+                    notificationId = NotificationManager.showNotification(
+                        message = "Uploading $fileName...",
+                        type = NotificationType.LOADING,
+                        progress = 0
+                    )
+                    
+                    FileActions.uploadFile(
+                        context, 
+                        db, 
+                        storage, 
+                        it, 
+                        fileName,
+                        onProgress = { progress ->
+                            notificationId?.let { id ->
+                                NotificationManager.updateNotification(
+                                    id,
+                                    progress = progress
+                                )
+                            }
+                        }
+                    )
+                    
+                    // Complete notification
+                    notificationId?.let { id ->
+                        NotificationManager.completeNotification(id, success = true)
+                    }
                     isUploading = false
                 } catch (e: Exception) {
+                    // Show error notification
+                    notificationId?.let { id ->
+                        NotificationManager.completeNotification(id, success = false)
+                        NotificationManager.updateNotification(
+                            id,
+                            message = "Upload failed: ${e.message ?: "Unknown error"}"
+                        )
+                    }
                     error = "Upload failed: ${e.message}"
                     isUploading = false
                 }
@@ -283,14 +322,50 @@ fun FileListScreen(
                 showCameraNameDialog = false
                 cameraImageUri?.let { uri ->
                     scope.launch {
+                        var notificationId: String? = null
                         try {
                             isUploading = true
                             val db = FirebaseFirestore.getInstance()
                             val storage = FirebaseStorage.getInstance()
-                            FileActions.uploadFile(context, db, storage, uri, fileName)
+                            
+                            // Show notification
+                            notificationId = NotificationManager.showNotification(
+                                message = "Uploading $fileName...",
+                                type = NotificationType.LOADING,
+                                progress = 0
+                            )
+                            
+                            FileActions.uploadFile(
+                                context, 
+                                db, 
+                                storage, 
+                                uri, 
+                                fileName,
+                                onProgress = { progress ->
+                                    notificationId?.let { id ->
+                                        NotificationManager.updateNotification(
+                                            id,
+                                            progress = progress
+                                        )
+                                    }
+                                }
+                            )
+                            
+                            // Complete notification
+                            notificationId?.let { id ->
+                                NotificationManager.completeNotification(id, success = true)
+                            }
                             isUploading = false
                             cameraImageUri = null
                         } catch (e: Exception) {
+                            // Show error notification
+                            notificationId?.let { id ->
+                                NotificationManager.completeNotification(id, success = false)
+                                NotificationManager.updateNotification(
+                                    id,
+                                    message = "Upload failed: ${e.message ?: "Unknown error"}"
+                                )
+                            }
                             error = "Upload failed: ${e.message}"
                             isUploading = false
                             cameraImageUri = null
@@ -313,15 +388,50 @@ fun FileListScreen(
             onConfirm = { fileName, content ->
                 showNoteNameDialog = false
                 scope.launch {
+                    var notificationId: String? = null
                     try {
                         isUploading = true
                         val db = FirebaseFirestore.getInstance()
                         val storage = FirebaseStorage.getInstance()
                         val bytes = content.toByteArray(Charsets.UTF_8)
-                        FileActions.uploadBytes(db, storage, bytes, fileName)
+                        
+                        // Show notification
+                        notificationId = NotificationManager.showNotification(
+                            message = "Uploading $fileName...",
+                            type = NotificationType.LOADING,
+                            progress = 0
+                        )
+                        
+                        FileActions.uploadBytes(
+                            db, 
+                            storage, 
+                            bytes, 
+                            fileName,
+                            onProgress = { progress ->
+                                notificationId?.let { id ->
+                                    NotificationManager.updateNotification(
+                                        id,
+                                        progress = progress
+                                    )
+                                }
+                            }
+                        )
+                        
+                        // Complete notification
+                        notificationId?.let { id ->
+                            NotificationManager.completeNotification(id, success = true)
+                        }
                         isUploading = false
                         noteContent = ""
                     } catch (e: Exception) {
+                        // Show error notification
+                        notificationId?.let { id ->
+                            NotificationManager.completeNotification(id, success = false)
+                            NotificationManager.updateNotification(
+                                id,
+                                message = "Upload failed: ${e.message ?: "Unknown error"}"
+                            )
+                        }
                         error = "Upload failed: ${e.message}"
                         isUploading = false
                         noteContent = ""
@@ -368,14 +478,35 @@ fun FileListScreen(
                         return@BulkActionsToolbar
                     }
                     scope.launch {
+                        var notificationId: String? = null
                         try {
                             val db = FirebaseFirestore.getInstance()
                             val storage = FirebaseStorage.getInstance()
+                            
+                            // Show notification for bulk delete
+                            notificationId = NotificationManager.showNotification(
+                                message = "Deleting ${filesToDelete.size} file(s)...",
+                                type = NotificationType.LOADING
+                            )
+                            
                             filesToDelete.forEach { file ->
                                 FileActions.deleteFile(db, storage, file)
                             }
+                            
+                            // Complete notification
+                            notificationId?.let { id ->
+                                NotificationManager.completeNotification(id, success = true)
+                            }
                             selectedIds = emptySet()
                         } catch (e: Exception) {
+                            // Show error notification
+                            notificationId?.let { id ->
+                                NotificationManager.completeNotification(id, success = false)
+                                NotificationManager.updateNotification(
+                                    id,
+                                    message = "Delete failed: ${e.message ?: "Unknown error"}"
+                                )
+                            }
                             error = "Delete failed: ${e.message}"
                         }
                     }
@@ -434,6 +565,11 @@ fun FileListScreen(
                             onToggleStarredFirst = { toggleStarredFirst() }
                         )
                     }
+                    
+                    NotificationBellButton(
+                        onClick = onNotificationsClick,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
 
                     IconButton(onClick = onSettingsClick) {
                         Icon(
@@ -523,12 +659,33 @@ fun FileListScreen(
                                     return@FileItem
                                 }
                                 scope.launch {
+                                    var notificationId: String? = null
                                     try {
                                         val db = FirebaseFirestore.getInstance()
                                         val storage = FirebaseStorage.getInstance()
+                                        
+                                        // Show notification
+                                        notificationId = NotificationManager.showNotification(
+                                            message = "Deleting ${file.name}...",
+                                            type = NotificationType.LOADING
+                                        )
+                                        
                                         FileActions.deleteFile(db, storage, file)
+                                        
+                                        // Complete notification
+                                        notificationId?.let { id ->
+                                            NotificationManager.completeNotification(id, success = true)
+                                        }
                                         selectedIds = emptySet()
                                     } catch (e: Exception) {
+                                        // Show error notification
+                                        notificationId?.let { id ->
+                                            NotificationManager.completeNotification(id, success = false)
+                                            NotificationManager.updateNotification(
+                                                id,
+                                                message = "Delete failed: ${e.message ?: "Unknown error"}"
+                                            )
+                                        }
                                         error = "Delete failed: ${e.message}"
                                     }
                                 }

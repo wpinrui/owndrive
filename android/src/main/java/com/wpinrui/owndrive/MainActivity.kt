@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.wpinrui.owndrive.ui.FileListScreen
 import com.wpinrui.owndrive.ui.FirstLaunchScreen
+import com.wpinrui.owndrive.ui.NotificationScreen
 import com.wpinrui.owndrive.ui.SettingsScreen
 import com.wpinrui.owndrive.ui.theme.OwnDriveTheme
 
@@ -28,6 +29,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             OwnDriveTheme {
                 var showSettings by remember { mutableStateOf(false) }
+                var showNotifications by remember { mutableStateOf(false) }
                 var showFirstLaunch by remember { mutableStateOf(true) } // Start with true to check
                 var isFirebaseInitialized by remember { mutableStateOf(false) }
                 var configCheckTrigger by remember { mutableStateOf(0) }
@@ -76,6 +78,12 @@ class MainActivity : ComponentActivity() {
                                 modifier = contentPadding
                             )
                         }
+                        showNotifications -> {
+                            NotificationScreen(
+                                onBack = { showNotifications = false },
+                                modifier = contentPadding
+                            )
+                        }
                         showSettings -> {
                             SettingsScreen(
                                 onBack = { showSettings = false },
@@ -85,6 +93,7 @@ class MainActivity : ComponentActivity() {
                         isFirebaseInitialized -> {
                             FileListScreen(
                                 onSettingsClick = { showSettings = true },
+                                onNotificationsClick = { showNotifications = true },
                                 modifier = contentPadding
                             )
                         }
