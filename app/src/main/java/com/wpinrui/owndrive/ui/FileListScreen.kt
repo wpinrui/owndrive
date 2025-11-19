@@ -3,6 +3,8 @@ package com.wpinrui.owndrive.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,7 +15,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.wpinrui.owndrive.FileMeta
 
 @Composable
-fun FileListScreen() {
+fun FileListScreen(onSettingsClick: () -> Unit) {
     val db = FirebaseFirestore.getInstance()
     var files by remember { mutableStateOf<List<FileMeta>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -60,11 +62,23 @@ fun FileListScreen() {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Files from Firebase Storage",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Files from Firebase Storage",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings"
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
 
         when {
             isLoading -> {
