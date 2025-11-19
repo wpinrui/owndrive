@@ -4,24 +4,35 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import com.wpinrui.owndrive.FileMeta
+import com.wpinrui.owndrive.SettingsManager
+import com.wpinrui.owndrive.SortKey
+import com.wpinrui.owndrive.SortOrder
 
 @Composable
 fun FileListScreen(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var files by remember { mutableStateOf<List<FileMeta>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    
+    // Sort preferences
+    var sortKey by remember { mutableStateOf(SettingsManager.getSortKey(context)) }
+    var sortOrder by remember { mutableStateOf(SettingsManager.getSortOrder(context)) }
+    var showStarredFirst by remember { mutableStateOf(SettingsManager.getShowStarredFirst(context)) }
+    var showSortMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
@@ -64,6 +75,39 @@ fun FileListScreen(
             isLoading = false
         }
     }
+    
+    // Sort files
+    val displayedFiles = remember(files, sortKey, sortOrder, showStarredFirst) {
+        val sorted = sortFiles(files, sortKey, sortOrder)
+        if (!showStarredFirst) {
+            sorted
+        } else {
+            val starred = sorted.filter { it.starred }
+            val unstarred = sorted.filter { !it.starred }
+            starred + unstarred
+        }
+    }
+    
+    // Handle sort changes
+    fun handleSort(newSortKey: SortKey) {
+        if (newSortKey == sortKey) {
+            // Toggle order if same key
+            val newOrder = if (sortOrder == SortOrder.ASC) SortOrder.DESC else SortOrder.ASC
+            sortOrder = newOrder
+            SettingsManager.saveSortOrder(context, newOrder)
+        } else {
+            // Set new key with ascending order
+            sortKey = newSortKey
+            sortOrder = SortOrder.ASC
+            SettingsManager.saveSortKey(context, newSortKey)
+            SettingsManager.saveSortOrder(context, SortOrder.ASC)
+        }
+    }
+    
+    fun toggleStarredFirst() {
+        showStarredFirst = !showStarredFirst
+        SettingsManager.saveShowStarredFirst(context, showStarredFirst)
+    }
 
     Column(
         modifier = modifier
@@ -80,12 +124,101 @@ fun FileListScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
+            Row {
+                // Sort menu button
+                Box {
+                    IconButton(onClick = { showSortMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Sort options",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showSortMenu,
+                        onDismissRequest = { showSortMenu = false }
+                    ) {
+                        // Sort by options
+                        DropdownMenuItem(
+                            text = { Text("Sort by Name") },
+                            onClick = {
+                                handleSort(SortKey.NAME)
+                                showSortMenu = false
+                            },
+                            trailingIcon = {
+                                if (sortKey == SortKey.NAME) {
+                                    Text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sort by Size") },
+                            onClick = {
+                                handleSort(SortKey.SIZE)
+                                showSortMenu = false
+                            },
+                            trailingIcon = {
+                                if (sortKey == SortKey.SIZE) {
+                                    Text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sort by Last Modified") },
+                            onClick = {
+                                handleSort(SortKey.LAST_MODIFIED)
+                                showSortMenu = false
+                            },
+                            trailingIcon = {
+                                if (sortKey == SortKey.LAST_MODIFIED) {
+                                    Text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sort by Starred") },
+                            onClick = {
+                                handleSort(SortKey.STARRED)
+                                showSortMenu = false
+                            },
+                            trailingIcon = {
+                                if (sortKey == SortKey.STARRED) {
+                                    Text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sort by Type") },
+                            onClick = {
+                                handleSort(SortKey.TYPE)
+                                showSortMenu = false
+                            },
+                            trailingIcon = {
+                                if (sortKey == SortKey.TYPE) {
+                                    Text(if (sortOrder == SortOrder.ASC) "▲" else "▼")
+                                }
+                            }
+                        )
+                        Divider()
+                        // Starred first toggle
+                        DropdownMenuItem(
+                            text = { 
+                                Text(if (showStarredFirst) "⭐ Starred Files First" else "🗄️ Default File Order")
+                            },
+                            onClick = {
+                                toggleStarredFirst()
+                                showSortMenu = false
+                            }
+                        )
+                    }
+                }
+                IconButton(onClick = onSettingsClick) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -113,7 +246,7 @@ fun FileListScreen(
                     )
                 }
             }
-            files.isEmpty() -> {
+            displayedFiles.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -139,7 +272,7 @@ fun FileListScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(files) { file ->
+                    items(displayedFiles) { file ->
                         FileItem(file = file)
                     }
                 }
@@ -181,6 +314,12 @@ fun FileItem(file: FileMeta) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Modified: ${formatDate(file.lastModified)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 if (file.starred) {
                     Text(
@@ -190,6 +329,23 @@ fun FileItem(file: FileMeta) {
                 }
             }
         }
+    }
+}
+
+private fun sortFiles(files: List<FileMeta>, sortKey: SortKey, sortOrder: SortOrder): List<FileMeta> {
+    return files.sortedWith { a, b ->
+        val result = when (sortKey) {
+            SortKey.NAME -> a.name.compareTo(b.name, ignoreCase = true)
+            SortKey.SIZE -> a.size.compareTo(b.size)
+            SortKey.LAST_MODIFIED -> a.lastModified.compareTo(b.lastModified)
+            SortKey.STARRED -> a.starred.compareTo(b.starred)
+            SortKey.TYPE -> {
+                val aType = a.name.substringAfterLast('.', "").lowercase()
+                val bType = b.name.substringAfterLast('.', "").lowercase()
+                aType.compareTo(bType)
+            }
+        }
+        if (sortOrder == SortOrder.ASC) result else -result
     }
 }
 
@@ -204,5 +360,12 @@ private fun formatFileSize(bytes: Long): String {
         kb >= 1 -> String.format("%.2f KB", kb)
         else -> "$bytes B"
     }
+}
+
+private fun formatDate(timestamp: Long): String {
+    if (timestamp == 0L) return "Unknown"
+    val date = java.util.Date(timestamp)
+    val formatter = java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault())
+    return formatter.format(date)
 }
 
