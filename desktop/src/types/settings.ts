@@ -3,6 +3,8 @@ export type CollisionBehavior =
   | "accept-newer-reject-older"
   | "keep-both-rename";
 
+export type Theme = "light" | "auto" | "dark";
+
 export interface FirebaseConfig {
   apiKey: string;
   projectId: string;
@@ -14,11 +16,13 @@ export interface UserSettings {
   starredCollisionBehavior: CollisionBehavior;
   firebaseConfig?: FirebaseConfig;
   fileSizeWarningLimit?: number; // File size warning limit in bytes (default: 100 MB)
+  theme?: Theme; // Theme preference: light, auto (follows system), or dark (default: auto)
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
   collisionBehavior: "ask-every-time",
   starredCollisionBehavior: "ask-every-time",
   fileSizeWarningLimit: 100 * 1024 * 1024, // 100 MB default (2% of 5 GB free tier)
+  theme: "auto", // Default to auto (follows system preference)
 };
 

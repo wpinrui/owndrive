@@ -10,6 +10,11 @@
   justify-content: center;
   z-index: 2000;
   animation: fadeIn 0.2s ease;
+
+  // Lighter overlay for light theme
+  :root.theme-light & {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
 }
 
 .settings-modal {
@@ -128,16 +133,16 @@
 
   // When checked, style the whole option
   &:has(input[type="radio"]:checked) {
-    border-color: #4fc3f7;
+    border-color: var(--accent-cyan);
     background-color: rgba(79, 195, 247, 0.15);
 
     .settings-option-label {
-      color: #4fc3f7;
+      color: var(--accent-cyan);
       font-weight: 600;
     }
 
     &:hover {
-      border-color: #81d4fa;
+      border-color: var(--accent-cyan-hover);
       background-color: rgba(79, 195, 247, 0.2);
     }
   }
@@ -232,7 +237,7 @@
 
   &:focus {
     outline: none;
-    border-color: #4fc3f7;
+    border-color: var(--accent-cyan);
     background-color: var(--bg-secondary);
   }
 
@@ -242,13 +247,52 @@
   }
 }
 
+.settings-select {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23616161' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-md) center;
+  padding-right: calc(var(--spacing-md) + 20px);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    background-color: var(--bg-secondary);
+  }
+
+  &:hover {
+    border-color: var(--border-secondary);
+    background-color: var(--bg-hover);
+  }
+
+  option {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+// Update arrow color for dark theme
+:root.theme-dark .settings-select,
+:root:not(.theme-light) .settings-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239d9d9d' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
 .settings-section-danger {
   border-top: 2px solid rgba(244, 67, 54, 0.3);
   padding-top: var(--spacing-lg);
   margin-top: var(--spacing-sm);
 
   h3 {
-    color: #f44336;
+    color: var(--accent-red);
   }
 
   .settings-description {
@@ -262,8 +306,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid #f44336;
-  background-color: #f44336;
+  border: 1px solid var(--accent-red);
+  background-color: var(--accent-red);
   color: white;
   display: inline-flex;
   align-items: center;
@@ -274,8 +318,8 @@
   }
 
   &:hover {
-    background-color: #d32f2f;
-    border-color: #d32f2f;
+    background-color: var(--accent-red-hover);
+    border-color: var(--accent-red-hover);
   }
 
   &:active {

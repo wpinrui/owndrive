@@ -1,6 +1,6 @@
 .file-row {
     &.selected {
-        background-color: #f1f1f1;
+        background-color: var(--bg-selected);
     }
 
     td {
@@ -127,19 +127,19 @@
                 transition: background 0.2s;
 
                 &:hover {
-                    background-color: #e0e0e0;
+                    background-color: var(--bg-hover);
                 }
 
                 &.download-btn {
-                    color: #1e88e5;
+                    color: var(--accent-blue);
                 }
 
                 &.delete-btn {
-                    color: #e53935;
+                    color: var(--accent-red);
                 }
 
                 &.star-btn {
-                    color: #fdd835;
+                    color: var(--accent-yellow);
                 }
             }
         }

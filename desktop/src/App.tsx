@@ -9,6 +9,7 @@ import { useFirebaseStorage } from "./hooks/useFirebaseStorage";
 import { getFirestore } from "firebase/firestore";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
 import { useSettings } from "./contexts/SettingsContext";
+import { useTheme } from "./hooks/useTheme";
 
 const STARRED_FIRST_STORAGE = "fileListStarredFirst";
 
@@ -21,6 +22,9 @@ const App: FC = () => {
     const { settings, isLoading } = useSettings();
     const db = app ? getFirestore(app) : null;
     const { isDragging, dragHandlers, CollisionDialogComponent, FileSizeDialogComponent } = useDragAndDrop(db, storage);
+    
+    // Apply theme based on user settings
+    useTheme(settings.theme);
 
     // Check if Firebase config is missing or has empty API key on initial load
     useEffect(() => {

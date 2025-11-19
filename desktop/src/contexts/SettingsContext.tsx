@@ -60,6 +60,7 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
   const [settings, setSettings] = useState<UserSettings>(() => ({
     ...DEFAULT_SETTINGS,
     fileSizeWarningLimit: DEFAULT_SETTINGS.fileSizeWarningLimit,
+    theme: DEFAULT_SETTINGS.theme,
     firebaseConfig: loadFirebaseConfig(),
   }));
   const [isLoading, setIsLoading] = useState(true);
@@ -83,12 +84,14 @@ export const SettingsProvider = ({ children, db }: SettingsProviderProps) => {
             collisionBehavior: data.collisionBehavior || DEFAULT_SETTINGS.collisionBehavior,
             starredCollisionBehavior: data.starredCollisionBehavior || DEFAULT_SETTINGS.starredCollisionBehavior,
             fileSizeWarningLimit: data.fileSizeWarningLimit !== undefined ? data.fileSizeWarningLimit : DEFAULT_SETTINGS.fileSizeWarningLimit,
+            theme: data.theme !== undefined ? data.theme : DEFAULT_SETTINGS.theme,
             firebaseConfig: prev.firebaseConfig, // Keep Firebase config from localStorage
           }));
         } else {
           // Ensure Firebase config is preserved even if Firestore settings don't exist
           setSettings((prev) => ({
             ...prev,
+            theme: prev.theme || DEFAULT_SETTINGS.theme,
             firebaseConfig: prev.firebaseConfig,
           }));
         }

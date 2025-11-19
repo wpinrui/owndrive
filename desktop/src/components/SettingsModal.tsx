@@ -1,7 +1,7 @@
 import { type FC, useState, useEffect } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import { useToast } from "../contexts/ToastContext";
-import type { CollisionBehavior } from "../types/settings";
+import type { CollisionBehavior, Theme } from "../types/settings";
 import { DEFAULT_SETTINGS } from "../types/settings";
 import { formatFileSize } from "./helpers/fileHelpers";
 import "../styling/SettingsModal.scss";
@@ -74,6 +74,33 @@ export const SettingsModal: FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="settings-modal-content">
+          <div className="settings-section">
+            <h3>Appearance</h3>
+            <p className="settings-description">
+              Choose your preferred theme. Auto follows your system preference.
+            </p>
+            <div className="settings-input-group">
+              <label htmlFor="theme-selector" className="settings-input-label">
+                Theme
+              </label>
+              <select
+                id="theme-selector"
+                className="settings-select"
+                value={localSettings.theme || DEFAULT_SETTINGS.theme || "auto"}
+                onChange={(e) =>
+                  setLocalSettings({
+                    ...localSettings,
+                    theme: e.target.value as Theme,
+                  })
+                }
+              >
+                <option value="light">Light</option>
+                <option value="auto">Auto</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+          </div>
+
           <div className="settings-section">
             <h3>Firebase Configuration</h3>
             <p className="settings-description">

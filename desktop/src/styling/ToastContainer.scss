@@ -34,7 +34,7 @@
     }
 
     &.toast-success {
-        border-left: 4px solid #4caf50;
+        border-left: 4px solid var(--accent-green);
     }
 
     &.toast-error {
@@ -67,7 +67,7 @@
     flex-shrink: 0;
 
     .toast-success & {
-        color: #4caf50;
+        color: var(--accent-green);
     }
 
     .toast-error & {
