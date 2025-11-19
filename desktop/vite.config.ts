@@ -43,15 +43,21 @@ const electronEntries = {
   },
 }
 
+// Check if we're building for web (Firebase hosting) or Electron
+const isWebBuild = process.env.BUILD_TARGET === 'web'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    electron({
-      main: electronEntries.main,
-      preload: electronEntries.preload,
-      renderer: {},
-    }),
+    // Only include Electron plugin when not building for web
+    ...(isWebBuild ? [] : [
+      electron({
+        main: electronEntries.main,
+        preload: electronEntries.preload,
+        renderer: {},
+      }),
+    ]),
   ],
   build: {
     outDir: 'dist',

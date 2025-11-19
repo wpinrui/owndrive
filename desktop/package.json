@@ -12,9 +12,13 @@
     "dev:electron": "vite",
     "icons": "node scripts/build-icons.mjs",
     "build": "tsc -b && vite build",
+    "build:web": "tsc -b && cross-env BUILD_TARGET=web vite build",
+    "build:electron": "npm run icons && npm run build && electron-builder",
     "package": "npm run icons && npm run build && electron-builder",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build:web && firebase deploy --only hosting",
+    "deploy:hosting": "npm run build:web && firebase deploy --only hosting"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
@@ -33,6 +37,7 @@
     "electron": "^32.2.7",
     "electron-builder": "^25.1.8",
     "electron-icon-builder": "^2.0.1",
+    "cross-env": "^7.0.3",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
