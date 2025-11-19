@@ -63,6 +63,8 @@ The Android app is built with Kotlin, Jetpack Compose, and Firebase.
 ./gradlew assembleRelease  # Build release APK
 ```
 
+For detailed setup instructions, see [`android/README.md`](android/README.md).
+
 ## 🔧 Development
 
 ### Working with Both Apps
@@ -110,4 +112,5 @@ This is a monorepo, so when contributing:
 ## 🔗 Links
 
 - Desktop app documentation: [`desktop/README.md`](desktop/README.md) - Contains detailed Firebase setup instructions and desktop-specific guides
-- Firebase setup guide: See [`desktop/README.md`](desktop/README.md) for comprehensive Firebase configuration steps
+- Android app documentation: [`android/README.md`](android/README.md) - Contains detailed Firebase setup instructions and Android-specific guides
+- Firebase setup guide: See [`desktop/README.md`](desktop/README.md) or [`android/README.md`](android/README.md) for comprehensive Firebase configuration steps
