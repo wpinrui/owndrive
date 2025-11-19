@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -27,23 +28,33 @@ class MainActivity : ComponentActivity() {
         setContent {
             OwnDriveTheme {
                 var showSettings by remember { mutableStateOf(false) }
-                var showFirstLaunch by remember { mutableStateOf(false) }
+                var showFirstLaunch by remember { mutableStateOf(true) } // Start with true to check
+                var isFirebaseInitialized by remember { mutableStateOf(false) }
                 var configCheckTrigger by remember { mutableStateOf(0) }
                 
-                // Check if Firebase config exists
+                // Check if Firebase config exists and initialize
                 LaunchedEffect(Unit, configCheckTrigger) {
                     val hasConfig = SettingsManager.getFirebaseSettings(this@MainActivity) != null
-                    showFirstLaunch = !hasConfig
                     
-                    // Only initialize Firebase if config exists
                     if (hasConfig) {
                         try {
                             FirebaseConfig.initialize(this@MainActivity)
+                            isFirebaseInitialized = true
+                            showFirstLaunch = false
                         } catch (e: Exception) {
                             // If initialization fails, show first launch screen
+                            isFirebaseInitialized = false
                             showFirstLaunch = true
                         }
+                    } else {
+                        isFirebaseInitialized = false
+                        showFirstLaunch = true
                     }
+                }
+                
+                // Disable back button when first launch screen is shown
+                BackHandler(enabled = showFirstLaunch) {
+                    // Do nothing - prevent back button on first launch
                 }
                 
                 Scaffold(
@@ -71,9 +82,18 @@ class MainActivity : ComponentActivity() {
                                 modifier = contentPadding
                             )
                         }
-                        else -> {
+                        isFirebaseInitialized -> {
                             FileListScreen(
                                 onSettingsClick = { showSettings = true },
+                                modifier = contentPadding
+                            )
+                        }
+                        else -> {
+                            // Loading or error state - show first launch
+                            FirstLaunchScreen(
+                                onConfigSaved = {
+                                    configCheckTrigger++
+                                },
                                 modifier = contentPadding
                             )
                         }
@@ -81,15 +101,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-    
-    // Disable back button when first launch screen is shown
-    override fun onBackPressed() {
-        val hasConfig = SettingsManager.getFirebaseSettings(this) != null
-        if (!hasConfig) {
-            // Don't allow back button on first launch screen
-            return
-        }
-        super.onBackPressed()
     }
 }

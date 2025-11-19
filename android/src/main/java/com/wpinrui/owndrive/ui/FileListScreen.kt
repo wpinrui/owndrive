@@ -19,13 +19,14 @@ fun FileListScreen(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val db = FirebaseFirestore.getInstance()
     var files by remember { mutableStateOf<List<FileMeta>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         try {
+            // Check if Firebase is initialized before using it
+            val db = FirebaseFirestore.getInstance()
             val registration = db.collection("files")
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
@@ -54,6 +55,10 @@ fun FileListScreen(
             
             // Store registration to cleanup later if needed
             // For now, we'll keep it active for the lifetime of the composable
+        } catch (e: IllegalStateException) {
+            // Firebase not initialized
+            error = "Firebase not configured. Please configure it in Settings."
+            isLoading = false
         } catch (e: Exception) {
             error = "Error initializing file listener: ${e.message}"
             isLoading = false
