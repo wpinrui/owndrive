@@ -10,7 +10,7 @@ OwnDrive is a file storage and sync solution that you host yourself using Fireba
 
 - **Keep full control**: Your files are stored in your own Firebase project
 - **Real-time sync**: Files uploaded from one device appear instantly on all your other devices
-- **Cross-platform**: Available for Windows, macOS, Linux (desktop) and Android (mobile)
+- **Cross-platform**: Available via web browser, Windows, macOS, Linux (desktop), and Android (mobile)
 - **Star important files**: Mark files for easy access and organization
 - **No vendor lock-in**: Your data stays in your Firebase project, not on a third-party server
 
@@ -33,7 +33,12 @@ OwnDrive requires a Firebase project to store your files. You'll need to:
 
 > **Note**: Setting up Firebase is the only technical step required. Once configured, using OwnDrive is straightforward!
 
-### 2. Install the Apps
+### 2. Access OwnDrive
+
+**Web App (No Installation Required):**
+- Access OwnDrive directly in your browser at [https://owndrive-ivan.web.app/](https://owndrive-ivan.web.app/)
+- No installation needed - works on any device with a web browser
+- Perfect for devices where you cannot install applications
 
 **Desktop App:**
 - Download the installer for your platform (Windows `.exe`, macOS `.dmg`, or Linux `.AppImage`)
