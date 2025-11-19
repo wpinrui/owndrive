@@ -15,7 +15,10 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.wpinrui.owndrive.FileMeta
 
 @Composable
-fun FileListScreen(onSettingsClick: () -> Unit) {
+fun FileListScreen(
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val db = FirebaseFirestore.getInstance()
     var files by remember { mutableStateOf<List<FileMeta>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -58,7 +61,7 @@ fun FileListScreen(onSettingsClick: () -> Unit) {
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
@@ -68,13 +71,15 @@ fun FileListScreen(onSettingsClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Files from Firebase Storage",
-                style = MaterialTheme.typography.headlineMedium
+                text = "OwnDrive",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings"
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -108,10 +113,21 @@ fun FileListScreen(onSettingsClick: () -> Unit) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No files found",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "📁",
+                            style = MaterialTheme.typography.displayMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Text(
+                            text = "No files found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             else -> {
@@ -130,31 +146,43 @@ fun FileListScreen(onSettingsClick: () -> Unit) {
 @Composable
 fun FileItem(file: FileMeta) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = file.name,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Size: ${formatFileSize(file.size)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (file.starred) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "⭐ Starred",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = file.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Size: ${formatFileSize(file.size)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (file.starred) {
+                    Text(
+                        text = "⭐",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }

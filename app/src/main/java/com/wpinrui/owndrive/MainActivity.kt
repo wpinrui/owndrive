@@ -5,6 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,11 +33,25 @@ class MainActivity : ComponentActivity() {
             OwnDriveTheme {
                 var showSettings by remember { mutableStateOf(false) }
                 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets.statusBars.union(WindowInsets.navigationBars)
+                ) { paddingValues ->
+                    val contentPadding = Modifier.padding(
+                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    )
+                    
                     if (showSettings) {
-                        SettingsScreen(onBack = { showSettings = false })
+                        SettingsScreen(
+                            onBack = { showSettings = false },
+                            modifier = contentPadding
+                        )
                     } else {
-                        FileListScreen(onSettingsClick = { showSettings = true })
+                        FileListScreen(
+                            onSettingsClick = { showSettings = true },
+                            modifier = contentPadding
+                        )
                     }
                 }
             }
