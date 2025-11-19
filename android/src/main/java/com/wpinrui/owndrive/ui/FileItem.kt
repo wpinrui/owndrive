@@ -1,6 +1,5 @@
 package com.wpinrui.owndrive.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -19,7 +18,6 @@ fun FileItem(
     file: FileMeta,
     isSelected: Boolean,
     isMultiSelectMode: Boolean,
-    isSingleSelectMode: Boolean,
     onItemClick: () -> Unit,
     onDownload: () -> Unit,
     onDelete: () -> Unit,
@@ -46,14 +44,6 @@ fun FileItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isMultiSelectMode) {
-                    Checkbox(
-                        checked = isSelected,
-                        onCheckedChange = { onItemClick() },
-                        modifier = Modifier.padding(end = 12.dp)
-                    )
-                }
-                
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = file.name,
@@ -74,7 +64,7 @@ fun FileItem(
                     )
                 }
                 
-                if (file.starred && !isSingleSelectMode) {
+                if (file.starred) {
                     Text(
                         text = "⭐",
                         style = MaterialTheme.typography.bodyLarge,
@@ -83,64 +73,6 @@ fun FileItem(
                 }
             }
             
-            // Sliding actions for single select mode
-            if (isSingleSelectMode) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 16.dp)
-                        .background(
-                            MaterialTheme.colorScheme.surface,
-                            shape = MaterialTheme.shapes.small
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = onDownload,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Download",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    if (!file.starred) {
-                        IconButton(
-                            onClick = onDelete,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                    
-                    IconButton(
-                        onClick = onToggleStar,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        if (file.starred) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Unstar",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Unstar",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }
