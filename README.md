@@ -109,6 +109,5 @@ This is a monorepo, so when contributing:
 
 ## 🔗 Links
 
-- Desktop app documentation: [`desktop/README.md`](desktop/README.md)
-- Firebase setup guide: See desktop README
-
+- Desktop app documentation: [`desktop/README.md`](desktop/README.md) - Contains detailed Firebase setup instructions and desktop-specific guides
+- Firebase setup guide: See [`desktop/README.md`](desktop/README.md) for comprehensive Firebase configuration steps
