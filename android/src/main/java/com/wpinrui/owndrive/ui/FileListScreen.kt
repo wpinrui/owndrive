@@ -1,5 +1,11 @@
 package com.wpinrui.owndrive.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +16,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +49,9 @@ import com.wpinrui.owndrive.SortKey
 import com.wpinrui.owndrive.SortOrder
 import com.wpinrui.owndrive.ui.utils.sortFiles
 import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun FileListScreen(
@@ -63,6 +75,108 @@ fun FileListScreen(
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     val isMultiSelectMode = selectedIds.size > 1
     val isSingleSelectMode = selectedIds.size == 1
+    
+    // Upload state
+    var showCameraNameDialog by remember { mutableStateOf(false) }
+    var showNoteNameDialog by remember { mutableStateOf(false) }
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    var noteContent by remember { mutableStateOf("") }
+    var isUploading by remember { mutableStateOf(false) }
+    
+    // Generate default file names
+    fun getDefaultCameraFileName(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+        return "${sdf.format(Date())}.jpg"
+    }
+    
+    fun getDefaultNoteFileName(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
+        return "${sdf.format(Date())}.txt"
+    }
+    
+    // Get clipboard content
+    fun getClipboardText(): String {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        val clip = clipboard?.primaryClip
+        return if (clip != null && clip.itemCount > 0) {
+            clip.getItemAt(0)?.text?.toString() ?: ""
+        } else {
+            ""
+        }
+    }
+    
+    // Helper function to get file name from URI
+    fun getFileNameFromUri(context: Context, uri: Uri): String? {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        result = it.getString(nameIndex)
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path?.let {
+                val cut = it.lastIndexOf('/')
+                if (cut != -1) {
+                    it.substring(cut + 1)
+                } else {
+                    it
+                }
+            }
+        }
+        return result
+    }
+    
+    // File picker launcher
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            scope.launch {
+                try {
+                    isUploading = true
+                    val fileName = getFileNameFromUri(context, it) ?: "file_${System.currentTimeMillis()}"
+                    val db = FirebaseFirestore.getInstance()
+                    val storage = FirebaseStorage.getInstance()
+                    FileActions.uploadFile(context, db, storage, it, fileName)
+                    isUploading = false
+                } catch (e: Exception) {
+                    error = "Upload failed: ${e.message}"
+                    isUploading = false
+                }
+            }
+        }
+    }
+    
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            cameraImageUri?.let {
+                showCameraNameDialog = true
+            }
+        }
+    }
+    
+    // Create camera image URI
+    fun createCameraImageUri(): Uri? {
+        val imageFile = File(context.cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
+        return try {
+            androidx.core.content.FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                imageFile
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     LaunchedEffect(Unit) {
         try {
@@ -130,6 +244,67 @@ fun FileListScreen(
     fun toggleStarredFirst() {
         showStarredFirst = !showStarredFirst
         SettingsManager.saveShowStarredFirst(context, showStarredFirst)
+    }
+    
+    // Dialogs
+    if (showCameraNameDialog && cameraImageUri != null) {
+        FileNameDialog(
+            title = "Name your photo",
+            defaultFileName = getDefaultCameraFileName(),
+            onDismiss = {
+                showCameraNameDialog = false
+                cameraImageUri = null
+            },
+            onConfirm = { fileName ->
+                showCameraNameDialog = false
+                cameraImageUri?.let { uri ->
+                    scope.launch {
+                        try {
+                            isUploading = true
+                            val db = FirebaseFirestore.getInstance()
+                            val storage = FirebaseStorage.getInstance()
+                            FileActions.uploadFile(context, db, storage, uri, fileName)
+                            isUploading = false
+                            cameraImageUri = null
+                        } catch (e: Exception) {
+                            error = "Upload failed: ${e.message}"
+                            isUploading = false
+                            cameraImageUri = null
+                        }
+                    }
+                }
+            }
+        )
+    }
+    
+    if (showNoteNameDialog) {
+        NoteDialog(
+            title = "Create note",
+            defaultFileName = getDefaultNoteFileName(),
+            defaultContent = noteContent,
+            onDismiss = {
+                showNoteNameDialog = false
+                noteContent = ""
+            },
+            onConfirm = { fileName, content ->
+                showNoteNameDialog = false
+                scope.launch {
+                    try {
+                        isUploading = true
+                        val db = FirebaseFirestore.getInstance()
+                        val storage = FirebaseStorage.getInstance()
+                        val bytes = content.toByteArray(Charsets.UTF_8)
+                        FileActions.uploadBytes(db, storage, bytes, fileName)
+                        isUploading = false
+                        noteContent = ""
+                    } catch (e: Exception) {
+                        error = "Upload failed: ${e.message}"
+                        isUploading = false
+                        noteContent = ""
+                    }
+                }
+            }
+        )
     }
 
     Column(
@@ -218,11 +393,11 @@ fun FileListScreen(
                 Row {
                     Box {
                         IconButton(onClick = { showSortMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Sort options",
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = "Sort options",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                         }
 
                         SortMenu(
@@ -238,7 +413,7 @@ fun FileListScreen(
 
                     IconButton(onClick = onSettingsClick) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
+                            imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onBackground
                         )
@@ -252,7 +427,9 @@ fun FileListScreen(
         when {
             isLoading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -260,15 +437,28 @@ fun FileListScreen(
             }
 
             error != null -> {
-                FileListErrorState(error = error!!)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    FileListErrorState(error = error!!)
+                }
             }
 
             displayedFiles.isEmpty() -> {
-                FileListEmptyState()
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    FileListEmptyState()
+                }
             }
 
             else -> {
                 LazyColumn(
+                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(displayedFiles) { file ->
@@ -333,6 +523,79 @@ fun FileListScreen(
                         )
                     }
                 }
+            }
+        }
+        
+        // Upload button group at the bottom
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Camera button (small)
+            FloatingActionButton(
+                onClick = {
+                    val uri = createCameraImageUri()
+                    if (uri != null) {
+                        cameraImageUri = uri
+                        cameraLauncher.launch(uri)
+                    } else {
+                        error = "Failed to create camera file"
+                    }
+                },
+                modifier = Modifier.size(56.dp),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.CameraAlt,
+                    contentDescription = "Take photo",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            // Note button (small)
+            FloatingActionButton(
+                onClick = {
+                    noteContent = getClipboardText()
+                    showNoteNameDialog = true
+                },
+                modifier = Modifier.size(56.dp),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Note,
+                    contentDescription = "Create note",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            // Upload file button (larger, extended FAB)
+            ExtendedFloatingActionButton(
+                onClick = { 
+                    if (!isUploading) {
+                        filePickerLauncher.launch("*/*")
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                if (isUploading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Upload,
+                        contentDescription = "Upload file",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Upload")
             }
         }
     }

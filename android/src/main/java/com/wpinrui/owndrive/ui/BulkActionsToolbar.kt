@@ -43,7 +43,7 @@ fun BulkActionsToolbar(
             ) {
                 IconButton(onClick = onDownload) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = Icons.Filled.PlayArrow,
                         contentDescription = "Download",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -51,7 +51,7 @@ fun BulkActionsToolbar(
                 
                 IconButton(onClick = onDelete) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector = Icons.Filled.Delete,
                         contentDescription = "Delete",
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -59,7 +59,7 @@ fun BulkActionsToolbar(
                 
                 IconButton(onClick = onToggleStar) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Filled.Star,
                         contentDescription = "Toggle Star",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -67,7 +67,7 @@ fun BulkActionsToolbar(
                 
                 IconButton(onClick = onCancel) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Filled.Close,
                         contentDescription = "Cancel",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
