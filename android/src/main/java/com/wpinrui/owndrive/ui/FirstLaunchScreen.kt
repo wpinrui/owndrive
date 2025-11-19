@@ -153,222 +153,194 @@ fun FirstLaunchScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Please configure your Firebase credentials to get started",
+                text = "Please configure your Firebase credentials to get started. These are stored locally and required to connect to your Firebase Storage and Firestore.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        // Firebase Configuration Card
+        // Input Fields Section
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // API Key
+            OutlinedTextField(
+                value = apiKey,
+                onValueChange = { 
+                    apiKey = it
+                    pasteError = null
+                },
+                label = { Text("API Key *") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+            // Project ID
+            OutlinedTextField(
+                value = projectId,
+                onValueChange = { 
+                    projectId = it
+                    pasteError = null
+                },
+                label = { Text("Project ID *") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+            // Storage Bucket
+            OutlinedTextField(
+                value = storageBucket,
+                onValueChange = { 
+                    storageBucket = it
+                    pasteError = null
+                },
+                label = { Text("Storage Bucket *") },
+                placeholder = { Text("e.g., project-id.appspot.com") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { handleSave() }
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+        }
+
+        // OR Section
+        Spacer(modifier = Modifier.height(16.dp))
+        
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Firebase Configuration",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = "Configure your Firebase project credentials. These are stored locally and required to connect to your Firebase Storage and Firestore.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Input Fields Section (Top 2/3)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(2f)
-                ) {
-                    // API Key
-                    OutlinedTextField(
-                        value = apiKey,
-                        onValueChange = { 
-                            apiKey = it
-                            pasteError = null
-                        },
-                        label = { Text("API Key *") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        )
-                    )
-
-                    // Project ID
-                    OutlinedTextField(
-                        value = projectId,
-                        onValueChange = { 
-                            projectId = it
-                            pasteError = null
-                        },
-                        label = { Text("Project ID *") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        )
-                    )
-
-                    // Storage Bucket
-                    OutlinedTextField(
-                        value = storageBucket,
-                        onValueChange = { 
-                            storageBucket = it
-                            pasteError = null
-                        },
-                        label = { Text("Storage Bucket *") },
-                        placeholder = { Text("e.g., project-id.appspot.com") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = { handleSave() }
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        )
-                    )
-                }
-
-                // OR Section (Bottom 1/3)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        // OR Divider
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            HorizontalDivider(
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                            Text(
-                                text = "OR",
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Paste Button
-                        Button(
-                            onClick = handlePasteFromClipboard,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(
-                                text = "Auto-fill from Clipboard",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        // Help Text
-                        Text(
-                            text = "Paste your Firebase config code from the console",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        
-                        // Success/Error Messages
-                        if (pasteSuccess) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "✓ Config parsed!",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        
-                        if (pasteError != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = pasteError!!,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Save Button
-                Button(
-                    onClick = handleSave,
+                // OR Divider
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = canSave && !isSaving,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                    Text(
+                        text = "OR",
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Paste Button
+                Button(
+                    onClick = handlePasteFromClipboard,
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Saving...")
-                    } else {
-                        Text("Save & Continue")
-                    }
+                    Text(
+                        text = "Auto-fill from Clipboard",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
-
-                // Error message
-                if (saveError != null) {
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Help Text
+                Text(
+                    text = "Paste your Firebase config code from the console",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                
+                // Success/Error Messages
+                if (pasteSuccess) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = saveError!!,
+                        text = "✓ Config parsed!",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                if (pasteError != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = pasteError!!,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Save Button
+        Button(
+            onClick = handleSave,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = canSave && !isSaving,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Saving...")
+            } else {
+                Text("Save & Continue")
+            }
+        }
+
+        // Error message
+        if (saveError != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = saveError!!,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
