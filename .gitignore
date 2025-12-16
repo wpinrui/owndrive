@@ -40,3 +40,6 @@ resources/icons/
 
 # env
 .env
+
+.claude/*
+agents/*
