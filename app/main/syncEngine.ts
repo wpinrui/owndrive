@@ -24,35 +24,53 @@ export class SyncEngine {
     console.log('[SyncEngine] Starting sync for folder:', this.syncFolder);
 
     // 1. Upload all existing files (initial sync)
+    console.log('[SyncEngine] Step 1: Upload all existing files...');
     await this.uploadAllFiles();
+    console.log('[SyncEngine] Step 1 complete: All files uploaded');
 
     // 2. Start watching for local changes
+    console.log('[SyncEngine] Step 2: Start watching for local changes...');
     this.watcher.on('add', (filePath) => this.handleLocalAdd(filePath));
     this.watcher.on('change', (filePath) => this.handleLocalChange(filePath));
     this.watcher.on('delete', (filePath) => this.handleLocalDelete(filePath));
     this.watcher.start(this.syncFolder);
+    console.log('[SyncEngine] Step 2 complete: File watcher started');
 
     // 3. Listen for cloud changes
-    console.log('[SyncEngine] Starting Firestore listener...');
-    this.unsubscribe = onSnapshot(collection(this.db, 'synced_files'), (snapshot) => {
-      console.log(`[SyncEngine] Firestore snapshot: ${snapshot.size} docs, ${snapshot.docChanges().length} changes`);
+    console.log('[SyncEngine] Step 3: Setting up Firestore listener...');
+    try {
+      this.unsubscribe = onSnapshot(
+        collection(this.db, 'synced_files'),
+        (snapshot) => {
+          console.log(`[SyncEngine] Firestore snapshot received: ${snapshot.size} docs, ${snapshot.docChanges().length} changes`);
 
-      snapshot.docChanges().forEach((change) => {
-        console.log(`[SyncEngine] Change type: ${change.type}, file: ${change.doc.data().relativePath}`);
+          snapshot.docChanges().forEach((change) => {
+            console.log(`[SyncEngine] Change type: ${change.type}, file: ${change.doc.data().relativePath}`);
 
-        if (change.type === 'added' || change.type === 'modified') {
-          this.handleCloudChange(change.doc.data()).catch(err => {
-            console.error('[SyncEngine] Error handling cloud change:', err);
+            if (change.type === 'added' || change.type === 'modified') {
+              this.handleCloudChange(change.doc.data()).catch(err => {
+                console.error('[SyncEngine] Error handling cloud change:', err);
+              });
+            } else if (change.type === 'removed') {
+              this.handleCloudDelete(change.doc.data()).catch(err => {
+                console.error('[SyncEngine] Error handling cloud delete:', err);
+              });
+            }
           });
-        } else if (change.type === 'removed') {
-          this.handleCloudDelete(change.doc.data()).catch(err => {
-            console.error('[SyncEngine] Error handling cloud delete:', err);
-          });
+        },
+        (error) => {
+          console.error('[SyncEngine] Firestore listener error:', error);
         }
-      });
-    });
+      );
+      console.log('[SyncEngine] Step 3 complete: Firestore listener active');
+    } catch (error) {
+      console.error('[SyncEngine] Error setting up Firestore listener:', error);
+      throw error;
+    }
 
+    console.log('[SyncEngine] ========================================');
     console.log('[SyncEngine] Sync started successfully');
+    console.log('[SyncEngine] ========================================');
   }
 
   private async uploadAllFiles() {

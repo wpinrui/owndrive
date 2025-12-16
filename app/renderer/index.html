@@ -229,26 +229,41 @@
           const result = await window.electronAPI.startSync();
           btn.disabled = false;
 
-          if (result.includes('not implemented')) {
+          console.log('[UI] Start sync result:', result);
+
+          // Check if there was an error
+          if (result.startsWith('Error')) {
+            status.textContent = result;
+            status.classList.remove('success');
+            status.classList.add('error');
             alert(result);
-          } else {
+          } else if (result === 'Sync is already running') {
+            status.textContent = result;
             btn.textContent = 'Stop Sync';
-            status.textContent = 'Syncing...';
+          } else {
+            // Success
+            btn.textContent = 'Stop Sync';
+            status.textContent = 'Syncing... (check terminal for logs)';
             status.classList.add('success');
+            status.classList.remove('error');
           }
         } else {
           btn.disabled = true;
-          await window.electronAPI.stopSync();
+          const result = await window.electronAPI.stopSync();
           btn.disabled = false;
 
+          console.log('[UI] Stop sync result:', result);
+
           btn.textContent = 'Start Sync';
-          status.textContent = 'Not syncing';
+          status.textContent = result || 'Not syncing';
           status.classList.remove('success');
+          status.classList.remove('error');
         }
       } catch (error) {
         console.error('Error toggling sync:', error);
         alert('Error: ' + error.message);
         btn.disabled = false;
+        status.classList.add('error');
       }
     }
   </script>
