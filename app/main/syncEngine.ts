@@ -33,8 +33,13 @@ export class SyncEngine {
     this.watcher.start(this.syncFolder);
 
     // 3. Listen for cloud changes
+    console.log('[SyncEngine] Starting Firestore listener...');
     this.unsubscribe = onSnapshot(collection(this.db, 'synced_files'), (snapshot) => {
+      console.log(`[SyncEngine] Firestore snapshot: ${snapshot.size} docs, ${snapshot.docChanges().length} changes`);
+
       snapshot.docChanges().forEach((change) => {
+        console.log(`[SyncEngine] Change type: ${change.type}, file: ${change.doc.data().relativePath}`);
+
         if (change.type === 'added' || change.type === 'modified') {
           this.handleCloudChange(change.doc.data()).catch(err => {
             console.error('[SyncEngine] Error handling cloud change:', err);
@@ -148,37 +153,51 @@ export class SyncEngine {
     const localPath = path.join(this.syncFolder, data.relativePath.split('/').join(path.sep));
 
     console.log(`[SyncEngine] Cloud change detected: ${data.relativePath}`);
+    console.log(`[SyncEngine] Local path will be: ${localPath}`);
 
     // Check if local file exists and is newer
     try {
       const stats = await fs.promises.stat(localPath);
+      console.log(`[SyncEngine] Local file exists. Local mtime: ${stats.mtimeMs}, Cloud mtime: ${data.lastModified}`);
       if (stats.mtimeMs >= data.lastModified) {
         console.log(`[SyncEngine] Local file is newer or same, skipping download`);
         return; // Local is newer or same, skip
       }
-    } catch {
+      console.log(`[SyncEngine] Cloud file is newer, will download`);
+    } catch (err: any) {
       // File doesn't exist locally, will download
-      console.log(`[SyncEngine] File doesn't exist locally, downloading`);
+      console.log(`[SyncEngine] File doesn't exist locally (${err.code}), will download`);
     }
 
     // Pause watcher to prevent loop
     this.watcher.pause(localPath);
 
     try {
+      console.log(`[SyncEngine] Getting download URL for: ${data.storagePath}`);
+
       // Download from Storage
       const url = await getDownloadURL(ref(this.storage, data.storagePath));
+      console.log(`[SyncEngine] Downloading from URL...`);
+
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const buffer = await response.arrayBuffer();
+      console.log(`[SyncEngine] Downloaded ${buffer.byteLength} bytes`);
 
       // Ensure directory exists
-      await fs.promises.mkdir(path.dirname(localPath), { recursive: true });
+      const dir = path.dirname(localPath);
+      await fs.promises.mkdir(dir, { recursive: true });
+      console.log(`[SyncEngine] Created directory: ${dir}`);
 
       // Write file
       await fs.promises.writeFile(localPath, Buffer.from(buffer));
 
-      console.log(`[SyncEngine] Downloaded: ${data.relativePath}`);
+      console.log(`[SyncEngine] Successfully downloaded: ${data.relativePath}`);
     } catch (error) {
-      console.error(`[SyncEngine] Error downloading file:`, error);
+      console.error(`[SyncEngine] Error downloading file ${data.relativePath}:`, error);
     }
   }
 
