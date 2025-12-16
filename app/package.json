@@ -1,0 +1,38 @@
+{
+  "name": "owndrive-sync",
+  "version": "1.0.0",
+  "description": "OwnDrive folder sync - minimal Electron app for bidirectional Firebase sync",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "tsc && electron .",
+    "build": "tsc",
+    "package": "electron-builder"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "electron": "^28.0.0",
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/electron": "^1.6.10",
+    "typescript": "^5.3.3",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.owndrive.sync",
+    "productName": "OwnDrive Sync",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/**/*"
+    ],
+    "win": {
+      "target": ["nsis"]
+    }
+  }
+}
